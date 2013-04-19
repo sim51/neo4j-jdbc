@@ -1,8 +1,11 @@
-.idea
 *.iml
-*.ipr
 *.iws
-/.classpath
-/target
-/.settings
-/.project
+*.ipr
+*.patch
+*.diff
+.idea
+.classpath
+.settings
+.projects
+target
+.shell_history
