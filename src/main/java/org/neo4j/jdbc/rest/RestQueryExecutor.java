@@ -7,12 +7,12 @@ import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ObjectNode;
 import org.neo4j.jdbc.*;
-import org.restlet.Client;
 import org.restlet.Response;
 import org.restlet.data.CharacterSet;
 import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
+import org.restlet.routing.Filter;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -26,25 +26,25 @@ import java.util.Map;
 */
 public class RestQueryExecutor implements QueryExecutor {
     protected final static Log log = LogFactory.getLog(RestQueryExecutor.class);
-    private final static Client client = new Client("HTTP");
 
     private String url;
         private ClientResource cypherResource;
         private ObjectMapper mapper = new ObjectMapper();
         private Version version;
+    private final Resources.DiscoveryClientResource discovery;
 
     public RestQueryExecutor(String connectionUrl, String user, String password) throws SQLException {
         try
                 {
-                    url = "http" + connectionUrl;
+                    url = connectionUrl;
                     if (log.isInfoEnabled())log.info("Connecting to URL "+url);
-                    Resources resources = new Resources(url, client);
+                    Resources resources = new Resources(url);
 
                     if (user!=null && password!=null) {
                         resources.setAuth(user, password);
                     }
 
-                    Resources.DiscoveryClientResource discovery = resources.getDiscoveryResource();
+                    discovery = resources.getDiscoveryResource();
 
                     version = new Version(discovery.getVersion());
 
@@ -57,10 +57,15 @@ public class RestQueryExecutor implements QueryExecutor {
                 }
     }
 
-    public ExecutionResult executeQuery(String query, Map<String, Object> parameters) throws SQLException {
-        final ClientResource resource = new ClientResource(cypherResource);
+    public ExecutionResult executeQuery(String query, Map<String, Object> parameters, boolean autoCommit) throws Exception {
+        if (!autoCommit) {
+            throw new SQLException("Manual commit mode not supported over REST");
+        }
+        ClientResource resource = null;
         try {
             ObjectNode queryNode = queryParameter(query, parameters);
+
+            resource = new ClientResource(cypherResource);
             Representation rep = resource.post(queryNode.toString());
             rep.setCharacterSet(new CharacterSet("UTF-8"));
             JsonNode node = mapper.readTree(rep.getReader());
@@ -82,6 +87,7 @@ public class RestQueryExecutor implements QueryExecutor {
      */
     private String extractErrorMessage(ClientResource resource) {
         try {
+            if (resource==null) return null;
             Response resp = resource.getResponse();
             if (resp == null) return null;
             Representation rep = resp.getEntity();
@@ -99,7 +105,7 @@ public class RestQueryExecutor implements QueryExecutor {
 
 	@Override
     public void stop() throws Exception {
-        ((Client) cypherResource.getNext()).stop();
+        ((Filter) cypherResource.getNext()).stop();
     }
 
     @Override
@@ -110,7 +116,7 @@ public class RestQueryExecutor implements QueryExecutor {
     private ObjectNode queryParameter(String query, Map<String, Object> parameters) {
             ObjectNode queryNode = mapper.createObjectNode();
             queryNode.put("query", escapeQuery(query));
-            queryNode.put("params", parametersNode(parameters));
+            if (parameters!=null) queryNode.put("params", parametersNode(parameters));
             return queryNode;
         }
 
@@ -155,4 +161,14 @@ public class RestQueryExecutor implements QueryExecutor {
             }
             return params;
         }
+
+    @Override
+    public void commit() throws Exception {
+        // no op
+    }
+
+    @Override
+    public void rollback() throws Exception {
+        // no op
+    }
 }

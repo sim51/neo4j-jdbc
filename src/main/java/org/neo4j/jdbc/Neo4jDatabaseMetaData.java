@@ -774,7 +774,9 @@ public class Neo4jDatabaseMetaData
 
         while (result.next())
         {
-            rs.row().cell("TABLE_CAT", "Default").cell("TABLE_SCHEM","Default").cell("TABLE_NAME", result.getString("type.type")).cell("TABLE_TYPE", "TABLE");
+            final String type = result.getString("type.type");
+            System.out.println("type = " + type);
+            rs.row().cell("TABLE_CAT", "Default").cell("TABLE_SCHEM","Default").cell("TABLE_NAME", type).cell("TABLE_TYPE", "TABLE");
         }
         return rs.newResultSet(connection);
     }

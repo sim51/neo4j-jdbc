@@ -27,20 +27,26 @@ import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.*;
+import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
+import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 import org.neo4j.kernel.GraphDatabaseAPI;
 import org.neo4j.server.WrappingNeoServer;
 import org.neo4j.server.configuration.Configurator;
 import org.neo4j.server.configuration.ServerConfigurator;
 import org.neo4j.server.web.WebServer;
 import org.neo4j.test.ImpermanentGraphDatabase;
+import org.neo4j.test.TestGraphDatabaseBuilder;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Properties;
 
+import static org.junit.Assert.assertEquals;
 import static org.neo4j.helpers.collection.MapUtil.stringMap;
 
 /**
@@ -57,11 +63,10 @@ public class Neo4jJdbcTest {
     private static WebServer webServer;
     protected final Mode mode;
 
-    public enum Mode { embedded, server, server_auth }
-
+    public enum Mode { embedded, server, server_tx, server_auth }
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
-        return Arrays.<Object[]>asList(new Object[]{Mode.embedded},new Object[]{Mode.server},new Object[]{Mode.server_auth});
+        return Arrays.<Object[]>asList(new Object[]{Mode.embedded},new Object[]{Mode.server},new Object[]{Mode.server_auth},new Object[]{Mode.server_tx});
 //        return Arrays.<Object[]>asList(new Object[]{Mode.server_tx});
     }
 
@@ -85,14 +90,22 @@ public class Neo4jJdbcTest {
                 if (webServer==null) {
                     webServer = startWebServer(gdb,PORT,false);
                 }
+                props.setProperty(Driver.LEGACY,"true");
+                conn = driver.connect("jdbc:neo4j://localhost:"+PORT, props);
+                break;
+            case server_tx:
+                if (webServer==null) {
+                    webServer = startWebServer(gdb,PORT,false);
+                }
                 conn = driver.connect("jdbc:neo4j://localhost:"+PORT, props);
                 break;
             case server_auth:
                 if (webServer==null) {
                     webServer = startWebServer(gdb, PORT,true);
                 }
-                props.put("user",TestAuthenticationFilter.USER);
-                props.put("password", TestAuthenticationFilter.PASSWORD);
+                props.put(Driver.USER,TestAuthenticationFilter.USER);
+                props.put(Driver.PASSWORD,TestAuthenticationFilter.PASSWORD);
+                props.setProperty(Driver.LEGACY, "true");
                 conn = driver.connect("jdbc:neo4j://localhost:"+PORT, props);
                 break;
         }

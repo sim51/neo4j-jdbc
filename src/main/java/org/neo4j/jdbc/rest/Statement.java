@@ -1,0 +1,82 @@
+package org.neo4j.jdbc.rest;
+
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ArrayNode;
+import org.codehaus.jackson.node.ObjectNode;
+
+import java.math.BigDecimal;
+import java.util.Map;
+
+/**
+ * @author mh
+ * @since 20.04.13
+ */
+public class Statement {
+    final String query;
+    final Map<String, Object> params;
+
+    Statement(String query, Map<String, Object> params) {
+        this.query = query;
+        this.params = params;
+    }
+
+    public ObjectNode toJson(ObjectMapper mapper) {
+        ObjectNode queryNode = mapper.createObjectNode();
+        queryNode.put("statement", escapeQuery(query));
+        if (params != null && !params.isEmpty()) queryNode.put("parameters", parametersNode(params, mapper));
+        return queryNode;
+    }
+
+    @Override
+    public String toString() {
+        return "query: "+query+"\nparams:"+params;
+    }
+
+    private String escapeQuery(String query) {
+        return query.replace('\"', '\'').replace('\n', ' ');
+    }
+
+    private ObjectNode parametersNode(Map<String, Object> parameters, ObjectMapper mapper) {
+        ObjectNode params = mapper.createObjectNode();
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+            final String name = entry.getKey();
+            final Object value = entry.getValue();
+            if (value == null) {
+                params.putNull(name);
+            } else if (value instanceof String)
+                params.put(name, value.toString());
+            else if (value instanceof Integer)
+                params.put(name, (Integer) value);
+            else if (value instanceof Long)
+                params.put(name, (Long) value);
+            else if (value instanceof Boolean)
+                params.put(name, (Boolean) value);
+            else if (value instanceof BigDecimal)
+                params.put(name, (BigDecimal) value);
+            else if (value instanceof Double)
+                params.put(name, (Double) value);
+            else if (value instanceof byte[])
+                params.put(name, (byte[]) value);
+            else if (value instanceof Float)
+                params.put(name, (Float) value);
+            else if (value instanceof Number) {
+                final Number number = (Number) value;
+                if (number.longValue() == number.doubleValue()) {
+                    params.put(name, number.longValue());
+                } else {
+                    params.put(name, number.doubleValue());
+                }
+            }
+        }
+        return params;
+    }
+
+    public static ArrayNode toJson(ObjectMapper mapper, Statement... statements) {
+        ArrayNode result = mapper.createArrayNode();
+        if (statements == null || statements.length == 0) return result;
+        for (Statement statement : statements) {
+            result.add(statement.toJson(mapper));
+        }
+        return result;
+    }
+}

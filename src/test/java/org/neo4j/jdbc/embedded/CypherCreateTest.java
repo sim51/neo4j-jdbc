@@ -19,7 +19,7 @@ public class CypherCreateTest {
     public void testCreateNodeWithParam() throws Exception {
         final ImpermanentGraphDatabase gdb = new ImpermanentGraphDatabase();
         final ExecutionEngine engine = new ExecutionEngine(gdb);
-        engine.execute("create n={name:{1}}", Collections.<String,Object>singletonMap("1", "test"));
+        engine.execute("create (n {name:{1}})", Collections.<String,Object>singletonMap("1", "test"));
         final Node node = gdb.getNodeById(1);
         assertEquals("test",node.getProperty("name"));
     }

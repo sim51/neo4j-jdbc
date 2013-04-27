@@ -20,6 +20,7 @@
 
 package org.neo4j.jdbc;
 
+import java.sql.SQLException;
 import java.util.Map;
 
 /**
@@ -27,9 +28,13 @@ import java.util.Map;
 * @since 15.06.12
 */
 public interface QueryExecutor {
-    ExecutionResult executeQuery(String query, Map<String, Object> parameters) throws Exception;
+    ExecutionResult executeQuery(String query, Map<String, Object> parameters, boolean autoCommit) throws Exception;
 
     void stop() throws Exception;
 
     Version getVersion();
+
+    void commit() throws Exception;
+
+    void rollback() throws Exception;
 }

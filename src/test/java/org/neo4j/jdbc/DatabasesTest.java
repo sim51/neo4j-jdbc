@@ -40,6 +40,7 @@ public class DatabasesTest {
         final GraphDatabaseService db2 = databases.createDatabase(":mem:a", null);
         assertSame(db2, db);
     }
+
     @Test
     public void testLocateNamedInstance() throws Exception {
         final GraphDatabaseService db = new ImpermanentGraphDatabase();
@@ -48,6 +49,7 @@ public class DatabasesTest {
         final GraphDatabaseService db2 = databases.createDatabase(":instance:a", props);
         assertSame(db2, db);
     }
+
     @Test
     public void testLocateFileDb() throws Exception {
         FileUtils.deleteRecursively(new File("target/test-db"));
@@ -56,8 +58,9 @@ public class DatabasesTest {
         final GraphDatabaseService db2 = databases.createDatabase(":file:target/test-db", null);
         assertSame(db2,db);
     }
+
     @Test
-    @Ignore("readonly mode in parallel is no longer supported")
+    @Ignore("Not possible anymore to have a rw and ro-db accesssing the same store-files")
     public void testLocateFileDbReadonly() throws Exception {
         FileUtils.deleteRecursively(new File("target/test-db-ro"));
         new EmbeddedGraphDatabase("target/test-db-ro");

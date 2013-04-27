@@ -20,16 +20,14 @@
 
 package org.neo4j.jdbc;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Cypher execution result.
  */
 public class ExecutionResult implements Iterable<Object[]>
 {
+    public static final ExecutionResult EMPTY_RESULT = new ExecutionResult(Collections.<String>emptyList(), Collections.<Object[]>emptyList().iterator());
     private List<String> columns;
     private Iterator<Object[]> result;
     private final boolean isLazy;

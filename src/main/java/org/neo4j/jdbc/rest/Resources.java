@@ -13,6 +13,7 @@ import org.restlet.data.*;
 import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
 import org.restlet.util.Series;
+import scala.util.parsing.json.JSON;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -28,14 +29,14 @@ import java.util.List;
  * @since 12.06.12
  */
 public class Resources {
+    private final static Client client = new Client("HTTP");
+
     private ObjectMapper mapper = new ObjectMapper();
     private final Reference ref;
     private String user;
     private String password;
-    private final Client client;
 
-    Resources(String url, Client client) {
-        this.client = client;
+    Resources(String url) {
         ref = new Reference(new Reference(url), "/");
     }
 
@@ -49,6 +50,16 @@ public class Resources {
     public void setAuth(String user, String password) {
         this.user = user;
         this.password = password;
+    }
+
+    public static DiscoveryClientResource getDiscoveryResource(String url,String user,String password) throws IOException {
+        Resources resources = new Resources(url);
+
+        if (user!=null && password!=null) {
+            resources.setAuth(user, password);
+        }
+
+        return resources.getDiscoveryResource();
     }
 
     public DiscoveryClientResource getDiscoveryResource() throws IOException {
@@ -118,9 +129,10 @@ public class Resources {
             JsonNode serverData = readJsonFrom(dataUri);
 
             version = textField(serverData, "neo4j_version");
-            transactionPath = textField(serverData, "transaction");
 
             cypherPath = obtainCypherPath(serverData);
+            transactionPath = textField(serverData, "transaction");
+            if (transactionPath==null && (version.startsWith("2")||version.equals("1.9.M02-1083-g0593b83"))) transactionPath=dataUri+"/transaction";
         }
 
         private String obtainCypherPath(JsonNode serverData) {
@@ -174,7 +186,6 @@ public class Resources {
     }
 
     public static class TransactionClientResource extends ClientResource {
-        private final static JsonFactory JSON_FACTORY = new JsonFactory();
 
         public TransactionClientResource(final Context context, String path) {
             super(context, path);
@@ -186,31 +197,14 @@ public class Resources {
         }
 
         public TransactionClientResource subResource(String segment) {
-            return new TransactionClientResource(getContext(),getReference().addSegment(segment));
-        }
-
-        // todo multithreaded use
-        public JsonParser obtainParser() throws SQLException {
-            try {
-            Reader reader = getResponse().getEntity().getReader();
-            return JSON_FACTORY.createJsonParser(reader);
-            } catch (IOException ioe) {
-                throw new SQLTransientConnectionException("Error creating result parser",ioe);
-            }
+            return new TransactionClientResource(getContext(),getReference().clone().addSegment(segment));
         }
 
         @Override
         public void doError(Status errorStatus) {
-            try {
-                Collection<Object> errors=findErrors(obtainParser());
-                if (!errors.isEmpty())
-                    super.doError(new Status(errorStatus.getCode(), "Error executing statement", errors.toString(), errorStatus.getUri()));
-            } catch (SQLException e) {
-                // Ignore
-            } catch (IOException e) {
-                // Ignore
-            }
-
+            String errors = getResponse().getEntityAsText();
+            if (errors==null || !errors.isEmpty())
+                super.doError(new Status(errorStatus.getCode(), "Error executing statement", errors, errorStatus.getUri()));
             super.doError(errorStatus);
         }
 
