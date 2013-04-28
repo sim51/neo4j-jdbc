@@ -21,6 +21,7 @@
 package org.neo4j.jdbc;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.*;
 
@@ -50,6 +51,7 @@ public class Neo4jQueryNodeTest extends Neo4jJdbcTest
     }
 
     @Test
+    @Ignore
     public void testRetrieveNodes() throws SQLException
     {
         createData(gdb);

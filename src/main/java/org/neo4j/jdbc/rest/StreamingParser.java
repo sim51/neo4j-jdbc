@@ -79,7 +79,14 @@ class StreamingParser {
         }
     }
 
+    interface EndCallback {
+        void endReached();
+    }
+
     ExecutionResult nextResult(final ParserState state) {
+        return nextResult(state,null);
+    }
+    ExecutionResult nextResult(final ParserState state, final EndCallback endCallback) {
         if (!skipTo(state, JsonToken.START_OBJECT, "columns")) return null;
         final List<String> columns = readList(state);
         final int cols = columns.size();
@@ -97,10 +104,13 @@ class StreamingParser {
             public boolean hasNext() {
                 if (last) return false;
                 if (nextRow ==null) {
-                    nextRow =nextRow();
+                    nextRow = nextRow();
                     if (nextRow ==null) {
                         last = true;
                         skipTo(state, JsonToken.END_ARRAY, JsonToken.END_OBJECT); // go to end of the result
+                        if (endCallback!=null) {
+                            endCallback.endReached();
+                        }
                     }
                 }
                 return nextRow != null;
@@ -150,7 +160,11 @@ class StreamingParser {
                 public boolean hasNext() {
                     if (last) return false;
                     if (nextResult==null) {
-                        nextResult=nextResult(state);
+                        nextResult=nextResult(state, new EndCallback() {
+                            public void endReached() {
+                                hasNext();
+                            }
+                        });
                         if (nextResult==null) {
                             last = true;
                             skipTo(state, JsonToken.END_ARRAY, JsonToken.END_OBJECT);
@@ -200,8 +214,8 @@ class StreamingParser {
             final JsonToken token = state.nextToken();
             System.out.println("errors-next-token = " + token);
             if (token == JsonToken.FIELD_NAME) {
-                final List<Object> errors = readList(state);
                 state.consumeLast();
+                final List<Object> errors = readList(state);
                 System.out.println(state.parser.getCurrentToken());
                 if (errors == null || errors.isEmpty()) return;
                 System.out.println("errors = " + errors);
