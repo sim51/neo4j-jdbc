@@ -30,10 +30,10 @@ To debug the driver, add ?debug=true to the URL. This will log all calls to the 
 
 ===== In-Memory Graph Database =====
 * Connect with URLs on the form +jdbc:neo4j:mem+ or +jdbc:neo4j:mem:name+, e.g. +jdbc:neo4j:mem:mydb+
-* The passed in name allows for a database reusable across connections
+* The passed in name allows for a database that is reusable across connections
 
 ===== Existing Graph Database Instance =====
-* Connect with URLs on the form +jdbc:neo4j:instance:name+, e.g. +jdbc:neo4j:mem:mydb+ and put the database instance under the same name to the properties provided to the driver
+* Connect with URLs on the form +jdbc:neo4j:instance:name+, e.g. +jdbc:neo4j:mem:mydb+ and put the +GraphDatabaseService+ object instance under the same name into the properties provided to the driver
 
 ==== Server-Authentication ====
 
