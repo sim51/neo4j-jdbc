@@ -17,13 +17,11 @@
 
     <packaging>jar</packaging>
 
-    <!--
       <scm>
-        <connection>scm:git:git://github.com/neo4j/neo4j-jdbc.git</connection>
-        <developerConnection>scm:git:git@github.com:neo4j/neo4j-jdbc.git</developerConnection>
-        <url>https://github.com/neo4j/neo4j-jdbc</url>
+        <connection>scm:git:git://github.com/neo4j-contrib/neo4j-jdbc.git</connection>
+        <developerConnection>scm:git:git@github.com:neo4j-contrib/neo4j-jdbc.git</developerConnection>
+        <url>https://github.com/neo4j-contrib/neo4j-jdbc</url>
       </scm>
-    -->
 
     <licenses>
         <license>
