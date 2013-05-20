@@ -13,6 +13,7 @@ import org.restlet.data.CharacterSet;
 import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
+import org.restlet.routing.Filter;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -99,7 +100,7 @@ public class RestQueryExecutor implements QueryExecutor {
 
 	@Override
     public void stop() throws Exception {
-        ((Client) cypherResource.getNext()).stop();
+        ((Filter) cypherResource.getNext()).stop();
     }
 
     @Override
