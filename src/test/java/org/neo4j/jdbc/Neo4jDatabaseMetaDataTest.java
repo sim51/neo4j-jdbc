@@ -56,12 +56,12 @@ public class Neo4jDatabaseMetaDataTest extends Neo4jJdbcTest
     }
 
     private void createTableMetaData(GraphDatabaseService gdb) {
-        final Transaction tx = gdb.beginTx();
-        final Node tables = gdb.createNode();
-        final Node table = gdb.createNode();
-        final Node column = gdb.createNode();
-
-        tx.success();tx.finish();
+        try (Transaction tx = gdb.beginTx()) {
+            final Node tables = gdb.createNode();
+            final Node table = gdb.createNode();
+            final Node column = gdb.createNode();
+            tx.success();
+        }
     }
 
     @Test

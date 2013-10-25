@@ -11,7 +11,7 @@ import java.sql.SQLException;
  * @author mh
  * @since 14.06.12
  */
-@Ignore("Perf-Test")
+//@Ignore("Perf-Test")
 public class Neo4jJdbcRestPerformanceTest extends Neo4jJdbcTest {
 
     private Neo4jJdbcPerformanceTestRunner runner;

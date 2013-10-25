@@ -27,7 +27,9 @@ public class TransactionTest extends Neo4jJdbcTest {
         final ResultSet rs = conn.executeQuery("create (n {name:'Andres'}) return id(n)", null);
         rs.next();
         final long nodeId = rs.getLong(1);
-        assertEquals(nodeId,gdb.getNodeById(nodeId).getId());
+        begin();
+        assertEquals(nodeId, gdb.getNodeById(nodeId).getId());
+        done();
     }
 
     @Test
@@ -36,7 +38,9 @@ public class TransactionTest extends Neo4jJdbcTest {
         final ResultSet rs = conn.executeQuery("create (n {name:'Andres'}) return id(n)", null);
         rs.next();
         final long nodeId = rs.getLong(1);
+        begin();
         assertEquals(nodeId,gdb.getNodeById(nodeId).getId());
+        done();
     }
 
     @Test
@@ -94,8 +98,9 @@ public class TransactionTest extends Neo4jJdbcTest {
     }
 
     private void assertNodeExists(long nodeId, boolean exists) throws SQLException {
-        final ResultSet found = conn.executeQuery("start n=node(*) where id(n) = {id} return id(n)", map("id", nodeId));
-        assertEquals(exists, found.next());
+        // work around the automatic node-by-id lookup in cypher
+        final ResultSet found = conn.executeQuery("start n=node(*) where has(n.name) AND id(n) = {id} return id(n)", map("id", nodeId));
+        assertEquals("node exists "+nodeId,exists, found.next());
         if (exists) assertEquals(exists, nodeId == found.getLong(1));
     }
 
@@ -107,7 +112,7 @@ public class TransactionTest extends Neo4jJdbcTest {
                     assertNodeExists(nodeId,exists);
                     valid.set(true);
                 } catch (SQLException e) {
-                    // ignore throw new RuntimeException(e);
+                    // ignore
                 }
             }
         };

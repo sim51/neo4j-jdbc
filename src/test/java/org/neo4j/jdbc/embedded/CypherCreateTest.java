@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.test.ImpermanentGraphDatabase;
 
 import java.util.Collections;
@@ -20,7 +21,10 @@ public class CypherCreateTest {
         final ImpermanentGraphDatabase gdb = new ImpermanentGraphDatabase();
         final ExecutionEngine engine = new ExecutionEngine(gdb);
         engine.execute("create (n {name:{1}})", Collections.<String,Object>singletonMap("1", "test"));
-        final Node node = gdb.getNodeById(1);
-        assertEquals("test",node.getProperty("name"));
+        try (Transaction tx = gdb.beginTx()) {
+            final Node node = gdb.getNodeById(1);
+            assertEquals("test",node.getProperty("name"));
+            tx.success();
+        }
     }
 }

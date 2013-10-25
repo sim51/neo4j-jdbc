@@ -7,7 +7,9 @@ import java.util.Map;
 
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.helpers.Exceptions;
 import org.neo4j.helpers.collection.IteratorWrapper;
 import org.neo4j.jdbc.ExecutionResult;
 import org.neo4j.jdbc.QueryExecutor;
@@ -32,19 +34,25 @@ public class EmbeddedQueryExecutor implements QueryExecutor {
     }
 
     @Override
-    public ExecutionResult executeQuery(final String query, Map<String, Object> parameters, boolean autoCommit) throws Exception {
+    public ExecutionResult executeQuery(final String query, Map<String, Object> parameters, final boolean autoCommit) throws Exception {
         final Map<String, Object> params = parameters == null ? Collections.<String, Object>emptyMap() : parameters;
         begin();
         final org.neo4j.cypher.javacompat.ExecutionResult result = executionEngine.execute(query, params);
-        if (autoCommit) commit();
         final List<String> columns = result.columns();
         final int cols = columns.size();
         final Object[] resultRow = new Object[cols];
-        return new ExecutionResult(columns,new IteratorWrapper<Object[],Map<String,Object>>(result.iterator()) {
+        final ResourceIterator<Map<String,Object>> iterator = result.iterator();
+        if (!iterator.hasNext()) commitIfAutoCommit(autoCommit);
+        return new ExecutionResult(columns,new IteratorWrapper<Object[],Map<String,Object>>(iterator) {
+            boolean closed = false;
             @Override
             public boolean hasNext() {
                 try {
-                    return super.hasNext();
+                    boolean hasNext = super.hasNext();
+                    if (!hasNext && !closed) {
+                        close();
+                    }
+                    return hasNext;
                 } catch(Exception e)  {
                     handleException(e, query);
                     return false;
@@ -57,7 +65,21 @@ public class EmbeddedQueryExecutor implements QueryExecutor {
                 }
                 return resultRow;
             }
+
+            public void close() {
+                iterator.close();
+                closed = true;
+                commitIfAutoCommit(autoCommit);
+            }
         });
+    }
+
+    private void commitIfAutoCommit(boolean autoCommit) {
+        if (autoCommit) try {
+            commit();
+        } catch (Exception e) {
+            throw Exceptions.launderedException(e);
+        }
     }
 
     private void begin() {
@@ -72,7 +94,7 @@ public class EmbeddedQueryExecutor implements QueryExecutor {
         if (transaction ==null) return; // throw new SQLException("Not in transaction for commit");
         tx.set(null);
         transaction.success();
-        transaction.finish();
+        transaction.close();
     }
 
     @Override

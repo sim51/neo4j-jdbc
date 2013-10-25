@@ -24,10 +24,7 @@ import org.hamcrest.CoreMatchers;
 import org.junit.*;
 import org.neo4j.cypherdsl.Property;
 import org.neo4j.cypherdsl.expression.Expression;
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.DynamicRelationshipType;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.*;
 
 import java.sql.*;
 
@@ -63,10 +60,13 @@ public class Neo4jConnectionTest extends Neo4jJdbcTest {
 
     @Test
     public void testAccessData() throws Exception {
-        final Node root = gdb.getReferenceNode();
-        final Relationship typeRel = root.getSingleRelationship(DynamicRelationshipType.withName("TYPE"), Direction.OUTGOING);
-        final Node typeNode = typeRel.getEndNode();
-        assertEquals("test", typeNode.getProperty("type"));
+        try (Transaction tx = gdb.beginTx()) {
+            final Node root = gdb.getReferenceNode();
+            final Relationship typeRel = root.getSingleRelationship(DynamicRelationshipType.withName("TYPE"), Direction.OUTGOING);
+            final Node typeNode = typeRel.getEndNode();
+            assertEquals("test", typeNode.getProperty("type"));
+            tx.success();
+        }
     }
 
     @Test

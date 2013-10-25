@@ -21,11 +21,14 @@
 package org.neo4j.jdbc.ext;
 
 import org.neo4j.jdbc.Driver;
+import org.neo4j.jdbc.ListResultSet;
 import org.neo4j.jdbc.Neo4jConnection;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -36,6 +39,9 @@ public class DbVisualizerConnection
     extends Neo4jConnection
     implements Connection
 {
+
+    public static final String COLUMNS_QUERY = "$columns$";
+
     public DbVisualizerConnection(Driver driver, String url, Properties properties) throws SQLException
     {
         super(driver, url, properties);
@@ -45,13 +51,15 @@ public class DbVisualizerConnection
     public ResultSet executeQuery(String query, Map<String, Object> parameters) throws SQLException
     {
         {
-            if (query.contains("$columns$"))
+            if (query.contains(COLUMNS_QUERY))
             {
                 int idx = query.indexOf("\"");
                 int idx2 = query.indexOf("\"", idx+1);
                 final String type = query.substring(idx+1, idx2);
 
-                query = query.replace("$columns$", super.tableColumns(type, "instance."));
+                String columnsQuery = super.tableColumns(type, "instance.");
+//                return new ListResultSet("", columns,this);
+//                query = query.replace(COLUMNS_QUERY, columnsQuery);
             }
         }
 

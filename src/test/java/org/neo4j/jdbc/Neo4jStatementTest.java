@@ -79,11 +79,13 @@ public class Neo4jStatementTest extends Neo4jJdbcTest {
         // TODO int count = ps.executeUpdate();
         int count = 0;
         ps.executeUpdate();
+        begin();
         for (Node node : GlobalGraphOperations.at(gdb).getAllNodes()) {
             if (node.equals(gdb.getReferenceNode())) continue;
             assertEquals("test", node.getProperty("name"));
             count ++;
         }
+        done();
         assertEquals(1, count);
     }
 

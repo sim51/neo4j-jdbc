@@ -36,7 +36,7 @@ public class StreamingParserTest {
     public void testSkipStartObject() throws Exception {
         final String json = "{\"foo\":32}";
         final StreamingParser.ParserState parser = streamingParser.obtainParserState(new StringReader(json));
-        streamingParser.skipTo(parser, JsonToken.START_OBJECT);
+        streamingParser.skipTo(parser, "",JsonToken.START_OBJECT);
         Assert.assertEquals(JsonToken.FIELD_NAME,parser.nextToken());
         Assert.assertEquals("foo",parser.getCurrentName());
     }
@@ -44,7 +44,7 @@ public class StreamingParserTest {
     public void testSkipStartObjectField() throws Exception {
         final String json = "{\"foo\":42}";
         final StreamingParser.ParserState parser = streamingParser.obtainParserState(new StringReader(json));
-        streamingParser.skipTo(parser, JsonToken.START_OBJECT, "foo");
+        streamingParser.skipTo(parser, "",JsonToken.START_OBJECT, "foo");
         Assert.assertEquals(JsonToken.VALUE_NUMBER_INT,streamingParser.nextToken(parser));
         Assert.assertEquals(42,parser.parser.getValueAsInt());
     }
@@ -53,7 +53,7 @@ public class StreamingParserTest {
     public void testReadArray() throws Exception {
         final String json = "{\"foo\":[1,2,3]}";
         final StreamingParser.ParserState parser = streamingParser.obtainParserState(new StringReader(json));
-        streamingParser.skipTo(parser, JsonToken.START_OBJECT, "foo");
+        streamingParser.skipTo(parser, "",JsonToken.START_OBJECT, "foo");
         final Object[] objects = streamingParser.readObjectArray(parser);
         Assert.assertTrue(Arrays.toString(objects), Arrays.equals(new Integer[]{1, 2, 3}, objects));
     }
@@ -62,14 +62,14 @@ public class StreamingParserTest {
     public void testReadStringList() throws Exception {
         final String json = "{\"columns\":[\"a\",\"b\",\"c\"]}";
         final StreamingParser.ParserState parser = streamingParser.obtainParserState(new StringReader(json));
-        streamingParser.skipTo(parser, JsonToken.START_OBJECT, "columns");
+        streamingParser.skipTo(parser, "",JsonToken.START_OBJECT, "columns");
         List<String> columns = streamingParser.readList(parser);
         assertEquals(asList("a", "b", "c"), columns);
     }
 
     @Test
     public void testReadResultWithOneRow() throws Exception {
-        final String json = "{\"columns\":[\"a\",\"b\",\"c\"],\"data\": [[1,2,3]]}";
+        final String json = "{\"columns\":[\"a\",\"b\",\"c\"],\"data\": [{\"row\":[1,2,3]}]}";
         final StreamingParser.ParserState parser = streamingParser.obtainParserState(new StringReader(json));
         final ExecutionResult result = streamingParser.nextResult(parser);
         assertEquals(asList("a","b","c"),result.columns());
@@ -79,7 +79,7 @@ public class StreamingParserTest {
     }
     @Test(expected = IllegalStateException.class)
     public void testReadResultWithIncorrectRowLength() throws Exception {
-        final String json = "{\"columns\":[\"a\",\"b\"],\"data\": [[1]]}";
+        final String json = "{\"columns\":[\"a\",\"b\"],\"data\": [{\"row\":[1]}]}";
         final StreamingParser.ParserState parser = streamingParser.obtainParserState(new StringReader(json));
         final ExecutionResult result = streamingParser.nextResult(parser);
         IteratorUtil.count(result);
@@ -87,7 +87,7 @@ public class StreamingParserTest {
     }
     @Test
     public void testReadResultWithComplexContent() throws Exception {
-        final String json = "{\"columns\":[\"a\",\"b\",\"c\"],\"data\": [[[],{\"foo\":\"bar\"},[{},{}]]]}";
+        final String json = "{\"columns\":[\"a\",\"b\",\"c\"],\"data\": [{\"row\":[[],{\"foo\":\"bar\"},[{},{}]]}]}";
         final StreamingParser.ParserState parser = streamingParser.obtainParserState(new StringReader(json));
         final ExecutionResult result = streamingParser.nextResult(parser);
         assertEquals(asList("a", "b", "c"), result.columns());
@@ -100,7 +100,7 @@ public class StreamingParserTest {
     }
     @Test
     public void testReadResultWithTwoRows() throws Exception {
-        final String json = "{\"columns\":[\"a\",\"b\",\"c\"],\"data\": [[1,2,3],[4,5,6]]}";
+        final String json = "{\"columns\":[\"a\",\"b\",\"c\"],\"data\": [{\"row\":[1,2,3]},{\"row\":[4,5,6]}]}";
         final StreamingParser.ParserState parser = streamingParser.obtainParserState(new StringReader(json));
         final ExecutionResult result = streamingParser.nextResult(parser);
         assertEquals(asList("a","b","c"),result.columns());
@@ -113,8 +113,9 @@ public class StreamingParserTest {
     static final Statement STATEMENT = new Statement("start n=node(0) return n",Collections.<String,Object>emptyMap());
     @Test
     public void testReadMultipleResults() throws Exception {
-        final String resultJson = "{\"columns\":[\"a\",\"b\",\"c\"],\"data\": [[1,2,3]]}";
-        final String json = "{\"results\":["+resultJson+","+resultJson+"]}";
+        final String resultJson1 = "{\"columns\":[\"a\",\"b\",\"c\"],\"data\": [{\"row\":[1,2,3]}]}";
+        final String resultJson2 = "{\"columns\":[\"d\",\"e\",\"f\"],\"data\": [{\"row\":[4,5,6]}]}";
+        final String json = "{\"results\":["+resultJson1+","+resultJson2+"]}";
         final JsonParser parser = streamingParser.obtainParser(new StringReader(json));
         final Iterator<ExecutionResult> results = streamingParser.toResults(parser, STATEMENT,STATEMENT);
         ExecutionResult result = results.next();
@@ -123,7 +124,7 @@ public class StreamingParserTest {
         assertArrayEquals(new Integer[]{1, 2, 3}, rows.next());
         assertFalse(rows.hasNext());
         result = results.next();
-        assertEquals(asList("a","b","c"),result.columns());
+        assertEquals(asList("d","e","f"),result.columns());
         assertFalse(results.hasNext());
     }
 }

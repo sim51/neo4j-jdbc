@@ -34,9 +34,11 @@ import org.neo4j.kernel.GraphDatabaseAPI;
 import org.neo4j.server.WrappingNeoServer;
 import org.neo4j.server.configuration.Configurator;
 import org.neo4j.server.configuration.ServerConfigurator;
+import org.neo4j.server.modules.*;
 import org.neo4j.server.web.WebServer;
 import org.neo4j.test.ImpermanentGraphDatabase;
 import org.neo4j.test.TestGraphDatabaseBuilder;
+import org.neo4j.test.TestGraphDatabaseFactory;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -55,24 +57,26 @@ import static org.neo4j.helpers.collection.MapUtil.stringMap;
  */
 @RunWith(Parameterized.class)
 @Ignore
-public class Neo4jJdbcTest {
+public abstract class Neo4jJdbcTest {
     public static final int PORT = 7475;
     protected static final String REFERENCE_NODE_ID_QUERY = "start n=node(0) return ID(n) as id";
     protected Neo4jConnection conn;
     protected static ImpermanentGraphDatabase gdb;
     private static WebServer webServer;
     protected final Mode mode;
+    private Transaction tx;
 
     public enum Mode { embedded, server, server_tx, server_auth }
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
         return Arrays.<Object[]>asList(new Object[]{Mode.embedded},new Object[]{Mode.server},new Object[]{Mode.server_auth},new Object[]{Mode.server_tx});
 //        return Arrays.<Object[]>asList(new Object[]{Mode.server_tx});
+//        return Arrays.<Object[]>asList(new Object[]{Mode.embedded});
     }
 
     @BeforeClass
     public static void before() {
-        gdb = new ImpermanentGraphDatabase(stringMap("cache_type","none"));
+        gdb = (ImpermanentGraphDatabase) new TestGraphDatabaseFactory().newImpermanentDatabase();
     }
 
     public Neo4jJdbcTest(Mode mode) throws SQLException {
@@ -114,7 +118,16 @@ public class Neo4jJdbcTest {
     private WebServer startWebServer(GraphDatabaseAPI gdb, int port, boolean auth) {
         final ServerConfigurator config = new ServerConfigurator(gdb);
         config.configuration().setProperty(Configurator.WEBSERVER_PORT_PROPERTY_KEY,port);
-        final WrappingNeoServer wrappingNeoServer = new WrappingNeoServer(gdb, config);
+        final WrappingNeoServer wrappingNeoServer = new WrappingNeoServer(gdb, config) {
+            @Override
+            protected Iterable<ServerModule> createServerModules()
+            {
+                return Arrays.asList(
+                        new DiscoveryModule(webServer),
+                        new RESTApiModule(webServer, database, configurator.configuration()),
+                        new ThirdPartyJAXRSModule(webServer, configurator, this));
+            }
+        };
         final WebServer webServer = wrappingNeoServer.getWebServer();
         if (auth) webServer.addFilter(new TestAuthenticationFilter(), "/*");
         wrappingNeoServer.start();
@@ -183,4 +196,15 @@ public class Neo4jJdbcTest {
         final String releaseVersion = gdb.getKernelData().version().getRevision();
         return new Version(releaseVersion);
     }
+
+    protected Transaction begin() {
+        return tx = gdb.beginTx();
+    }
+    protected void done() {
+        if (tx!=null) {
+            tx.success();
+            tx.close();
+        }
+    }
+
 }

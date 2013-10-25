@@ -37,7 +37,7 @@ public class Neo4jJdbcPerformanceTestRunner {
             final Node n = gdb.createNode();
             node.createRelationshipTo(n, type);
         }
-        tx.success();tx.finish();
+        tx.success();tx.close();
     }
 
     private long execute(final Connection con) throws SQLException {

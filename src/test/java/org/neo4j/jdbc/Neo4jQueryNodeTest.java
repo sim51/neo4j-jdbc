@@ -51,12 +51,11 @@ public class Neo4jQueryNodeTest extends Neo4jJdbcTest
     }
 
     @Test
-    @Ignore
     public void testRetrieveNodes() throws SQLException
     {
         createData(gdb);
         Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery("start n=node(*) match p=n-[r?]-m return n,r,m,p,ID(n),length(p),n.name? as name limit 5");
+        ResultSet rs = stmt.executeQuery("start n=node(*) match p=(n)-[r?]-(m) return n,r,m,p,ID(n),length(p),n.name as name limit 5");
         int count = 0;
         ResultSetMetaData metaData = rs.getMetaData();
         int cols = metaData.getColumnCount();
@@ -77,15 +76,16 @@ public class Neo4jQueryNodeTest extends Neo4jJdbcTest
     }
 
     private void createData(GraphDatabaseService gdb) {
-        final Transaction tx = gdb.beginTx();
-        final Node n1 = gdb.createNode();
-        n1.setProperty("name","n1");
-        final Node n2 = gdb.createNode();
-        final Node n3 = gdb.createNode();
-        final Node n4 = gdb.createNode();
-        final Relationship rel1 = n1.createRelationshipTo(n2, DynamicRelationshipType.withName("REL"));
-        rel1.setProperty("name","rel1");
-        tx.success();tx.finish();
+        try (Transaction tx = gdb.beginTx()) {
+            final Node n1 = gdb.createNode();
+            n1.setProperty("name","n1");
+            final Node n2 = gdb.createNode();
+            final Node n3 = gdb.createNode();
+            final Node n4 = gdb.createNode();
+            final Relationship rel1 = n1.createRelationshipTo(n2, DynamicRelationshipType.withName("REL"));
+            rel1.setProperty("name","rel1");
+            tx.success();
+        }
     }
 }
 

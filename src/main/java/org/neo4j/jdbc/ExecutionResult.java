@@ -20,12 +20,16 @@
 
 package org.neo4j.jdbc;
 
+import org.neo4j.helpers.collection.ClosableIterator;
+
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.*;
 
 /**
  * Cypher execution result.
  */
-public class ExecutionResult implements Iterable<Object[]>
+public class ExecutionResult implements Iterable<Object[]>, Closeable
 {
     public static final ExecutionResult EMPTY_RESULT = new ExecutionResult(Collections.<String>emptyList(), Collections.<Object[]>emptyList().iterator());
     private List<String> columns;
@@ -63,5 +67,18 @@ public class ExecutionResult implements Iterable<Object[]>
 
     public Iterator<Object[]> getResult() {
         return result;
+    }
+
+    @Override
+    public void close() {
+        if (result instanceof Closeable) {
+            try {
+                ((Closeable)result).close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else if (result instanceof ClosableIterator) {
+            ((ClosableIterator)result).close();
+        }
     }
 }

@@ -1,5 +1,7 @@
 package org.neo4j.jdbc.ext;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.jdbc.Connections;
@@ -17,21 +19,18 @@ public class DbVisualizerConnectionTest extends Neo4jJdbcTest{
         super(mode);
     }
 
-    @Override
-    public void setUp() throws Exception {
-        System.setProperty(Connections.DB_VIS,"true");
-        super.setUp();
+    @BeforeClass
+    public static void setDBVisualizer() throws Exception {
+        System.setProperty(Connections.DB_VIS, "true");
     }
 
-    @Override
-    public void tearDown() {
-        super.tearDown();
-        System.setProperty(Connections.DB_VIS, null);
-        System.out.println(System.getProperties());
+    @AfterClass
+    public static void removeDBVisualizer() {
+        System.clearProperty(Connections.DB_VIS);
     }
 
     @Test
     public void testExecuteQuery() throws Exception {
-        conn.createStatement().executeQuery("$columns$");
+        conn.createStatement().executeQuery(DbVisualizerConnection.COLUMNS_QUERY+" \"foo\"");
     }
 }

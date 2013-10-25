@@ -69,6 +69,9 @@ class StreamingParser {
                 throw new IllegalStateException("Error during parse");
             }
         }
+        public String getCurrentToken() {
+            return String.valueOf(parser.getCurrentToken());
+        }
 
         public <T> T readValueAs(Class<T> type) {
             try {
@@ -86,17 +89,24 @@ class StreamingParser {
     ExecutionResult nextResult(final ParserState state) {
         return nextResult(state,null);
     }
+
+    // {"results":[{"columns":["ids"],"data":[{"row":[{"ids":[1,2,3]}]}]}],"errors":[]}
     ExecutionResult nextResult(final ParserState state, final EndCallback endCallback) {
-        if (!skipTo(state, JsonToken.START_OBJECT, "columns")) return null;
+        if (!skipTo(state,"nextResult1", JsonToken.START_OBJECT, "columns")) return null;
         final List<String> columns = readList(state);
+//        System.out.println("columns = " + columns);
         final int cols = columns.size();
-        skipTo(state, "data", JsonToken.START_ARRAY);
+        skipTo(state,"nextResult2", "data", JsonToken.START_ARRAY);
         return new ExecutionResult(columns, new Iterator<Object[]>() {
             boolean last=false;
             Object[] nextRow = null;
 
             private Object[] nextRow() {
+                if (nextToken(state)==JsonToken.START_OBJECT)
+                skipTo(state,"nextResult2.5",JsonToken.START_OBJECT,"row");
                 final Object[] row = readObjectArray(state);
+//                System.out.println(Arrays.toString(row));
+                if (row!=null) skipTo(state,"nextResult3",JsonToken.END_OBJECT);
                 if (row!=null && row.length != cols) throw new IllegalStateException("Row length "+row.length+" differs from column definition "+columns+" row details "+Arrays.toString(row));
                 return row;
             }
@@ -107,7 +117,7 @@ class StreamingParser {
                     nextRow = nextRow();
                     if (nextRow ==null) {
                         last = true;
-                        skipTo(state, JsonToken.END_ARRAY, JsonToken.END_OBJECT); // go to end of the result
+                        skipTo(state,"nextResult4",JsonToken.END_ARRAY, JsonToken.END_OBJECT); // go to end of the result
                         if (endCallback!=null) {
                             endCallback.endReached();
                         }
@@ -134,7 +144,6 @@ class StreamingParser {
     }
 
     <T> List<T> readList(ParserState state) {
-        try {
             JsonToken token = nextToken(state);
             if (token == JsonToken.START_ARRAY) {
                 final List<T> result = (List<T>) state.readValueAs(List.class);
@@ -144,15 +153,13 @@ class StreamingParser {
             // TODO if (token != null) throw new IllegalStateException("Unexpected token "+token);
             System.err.println("Unexpected token " + token);
             return null;
-        } catch (IOException ioe) {
-            throw new IllegalStateException("Unexpected error", ioe);
-        }
     }
 
+    // {"results":[{"columns":["ids"],"data":[{"row":[{"ids":[1,2,3]}]}]}],"errors":[]}
     Iterator<ExecutionResult> toResults(final JsonParser parser, Statement... statements) throws SQLException {
         try {
             final ParserState state = ParserState.from(parser);
-            skipTo(state, JsonToken.START_OBJECT, "results", JsonToken.START_ARRAY); // { "results"
+            skipTo(state, "toResults1", JsonToken.START_OBJECT, "results", JsonToken.START_ARRAY); // { "results"
             return new Iterator<ExecutionResult>() {
                 boolean last=false;
                 ExecutionResult nextResult = null;
@@ -167,7 +174,7 @@ class StreamingParser {
                         });
                         if (nextResult==null) {
                             last = true;
-                            skipTo(state, JsonToken.END_ARRAY, JsonToken.END_OBJECT);
+                            skipTo(state, "toResults2",JsonToken.END_OBJECT, JsonToken.END_ARRAY, JsonToken.END_OBJECT);
                         }
                     }
                     return nextResult != null;
@@ -188,8 +195,8 @@ class StreamingParser {
         }
     }
 
-    boolean skipTo(ParserState state, Object... tokenOrField) {
-        System.out.println("Skip to " + Arrays.toString(tokenOrField));
+    boolean skipTo(ParserState state, String msg, Object... tokenOrField) {
+//        System.out.println("Skip to '"+msg+"' " + Arrays.toString(tokenOrField));
         Map<JsonToken, Object> foundTokens = new LinkedHashMap<JsonToken, Object>();
         for (Object expectedToken : tokenOrField) {
             boolean matched;
@@ -202,7 +209,7 @@ class StreamingParser {
                     System.out.println("Match not found, was expected to skip to " + Arrays.toString(tokenOrField) + " found " + foundTokens+" current "+state.getCurrentName());
                     return false;
                 }
-                System.err.println("next " + token+" "+state.getCurrentName());
+//                System.err.println("next '"+msg+"' " + token+" "+state.getCurrentName()+"/"+state.getCurrentToken());
                 matched = expectedToken == token || state.getCurrentName() != null && state.getCurrentName().equals(expectedToken);
             } while(!matched);
         }
@@ -237,7 +244,7 @@ class StreamingParser {
         }
     }
 
-    public JsonToken nextToken(ParserState state) throws IOException {
+    public JsonToken nextToken(ParserState state) {
         return state.nextToken();
     }
 }
