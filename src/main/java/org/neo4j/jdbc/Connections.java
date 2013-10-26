@@ -56,6 +56,7 @@ public enum Connections {
     protected abstract boolean matches(Properties sysProps);
 
     public static Neo4jConnection create(Driver driver, String url, Properties p) throws SQLException {
+        System.out.println("p = " + System.getProperties());
         final Properties sysProps = System.getProperties();
         for (Connections connections : values()) {
             if (connections.matches(sysProps)) {

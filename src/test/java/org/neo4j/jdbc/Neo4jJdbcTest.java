@@ -27,17 +27,8 @@ import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.*;
-import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
-import org.neo4j.graphdb.factory.GraphDatabaseSettings;
-import org.neo4j.kernel.GraphDatabaseAPI;
-import org.neo4j.server.WrappingNeoServer;
-import org.neo4j.server.configuration.Configurator;
-import org.neo4j.server.configuration.ServerConfigurator;
-import org.neo4j.server.modules.*;
 import org.neo4j.server.web.WebServer;
 import org.neo4j.test.ImpermanentGraphDatabase;
-import org.neo4j.test.TestGraphDatabaseBuilder;
 import org.neo4j.test.TestGraphDatabaseFactory;
 
 import java.sql.ResultSet;
@@ -45,7 +36,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
@@ -58,7 +48,6 @@ import static org.neo4j.helpers.collection.MapUtil.stringMap;
 @RunWith(Parameterized.class)
 @Ignore
 public abstract class Neo4jJdbcTest {
-    public static final int PORT = 7475;
     protected static final String REFERENCE_NODE_ID_QUERY = "start n=node(0) return ID(n) as id";
     protected Neo4jConnection conn;
     protected static ImpermanentGraphDatabase gdb;
@@ -92,46 +81,27 @@ public abstract class Neo4jJdbcTest {
                 break;
             case server:
                 if (webServer==null) {
-                    webServer = startWebServer(gdb,PORT,false);
+                    webServer = TestServer.startWebServer(gdb, TestServer.PORT, false);
                 }
                 props.setProperty(Driver.LEGACY,"true");
-                conn = driver.connect("jdbc:neo4j://localhost:"+PORT, props);
+                conn = driver.connect("jdbc:neo4j://localhost:"+ TestServer.PORT, props);
                 break;
             case server_tx:
                 if (webServer==null) {
-                    webServer = startWebServer(gdb,PORT,false);
+                    webServer = TestServer.startWebServer(gdb, TestServer.PORT, false);
                 }
-                conn = driver.connect("jdbc:neo4j://localhost:"+PORT, props);
+                conn = driver.connect("jdbc:neo4j://localhost:"+ TestServer.PORT, props);
                 break;
             case server_auth:
                 if (webServer==null) {
-                    webServer = startWebServer(gdb, PORT,true);
+                    webServer = TestServer.startWebServer(gdb, TestServer.PORT, true);
                 }
                 props.put(Driver.USER,TestAuthenticationFilter.USER);
                 props.put(Driver.PASSWORD,TestAuthenticationFilter.PASSWORD);
                 props.setProperty(Driver.LEGACY, "true");
-                conn = driver.connect("jdbc:neo4j://localhost:"+PORT, props);
+                conn = driver.connect("jdbc:neo4j://localhost:"+ TestServer.PORT, props);
                 break;
         }
-    }
-
-    private WebServer startWebServer(GraphDatabaseAPI gdb, int port, boolean auth) {
-        final ServerConfigurator config = new ServerConfigurator(gdb);
-        config.configuration().setProperty(Configurator.WEBSERVER_PORT_PROPERTY_KEY,port);
-        final WrappingNeoServer wrappingNeoServer = new WrappingNeoServer(gdb, config) {
-            @Override
-            protected Iterable<ServerModule> createServerModules()
-            {
-                return Arrays.asList(
-                        new DiscoveryModule(webServer),
-                        new RESTApiModule(webServer, database, configurator.configuration()),
-                        new ThirdPartyJAXRSModule(webServer, configurator, this));
-            }
-        };
-        final WebServer webServer = wrappingNeoServer.getWebServer();
-        if (auth) webServer.addFilter(new TestAuthenticationFilter(), "/*");
-        wrappingNeoServer.start();
-        return webServer;
     }
 
 
@@ -154,7 +124,7 @@ public abstract class Neo4jJdbcTest {
     }
 
     protected String jdbcUrl() {
-        return "jdbc:neo4j://localhost:" + PORT + "/";
+        return "jdbc:neo4j://localhost:" + TestServer.PORT + "/";
     }
 
     @After

@@ -20,9 +20,7 @@ import java.io.Reader;
 import java.net.URI;
 import java.sql.SQLException;
 import java.sql.SQLTransientConnectionException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author mh
@@ -92,10 +90,14 @@ public class Resources {
         return withAuth(new TransactionClientResource(new Context(), transactionPath));
     }
 
-    public JsonNode readJsonFrom(String uri) throws IOException {
-        ClientResource resource = withAuth(new ClientResource(createContext(), uri));
-        resource.getClientInfo().setAcceptedMediaTypes(streamingJson());
-        return mapper.readTree(resource.get().getReader());
+    public JsonNode readJsonFrom(String uri) {
+        try {
+            ClientResource resource = withAuth(new ClientResource(createContext(), uri));
+            resource.getClientInfo().setAcceptedMediaTypes(streamingJson());
+            return mapper.readTree(resource.get().getReader());
+        } catch (IOException ioe) {
+            throw new RuntimeException("Error reading data from URI "+uri);
+        }
     }
 
     private String textField(JsonNode node, String field) {
@@ -109,6 +111,10 @@ public class Resources {
         private final ObjectMapper mapper;
         private String cypherPath;
         private String transactionPath;
+        private String dataUri;
+        private String labelPath;
+        private String relationshipTypesPath;
+        private String propertyKeysPath;
 
         public DiscoveryClientResource(Context context, Reference ref, ObjectMapper mapper) {
             super(context, ref);
@@ -124,15 +130,18 @@ public class Resources {
             // Get service root
             JsonNode discoveryInfo = mapper.readTree(get().getReader());
 
-            final String dataUri = textField(discoveryInfo, "data");
+            dataUri = textField(discoveryInfo, "data");
 
             JsonNode serverData = readJsonFrom(dataUri);
 
             version = textField(serverData, "neo4j_version");
 
             cypherPath = obtainCypherPath(serverData);
+            labelPath = dataUri + "/labels"; // serverData.get("labels").asText(); // /db/data/labels
+            relationshipTypesPath = serverData.get("relationship_types").asText(); // /db/data/relationship/types
+            propertyKeysPath = dataUri + "/propertykeys"; // serverData.get("property_keys").asText(); // /db/data/relationship/types
             transactionPath = textField(serverData, "transaction");
-            if (transactionPath==null && (version.startsWith("2")||version.equals("1.9.M02-1083-g0593b83"))) transactionPath=dataUri+"/transaction";
+            if (transactionPath==null && (version.startsWith("2")||version.equals("1.9.M02-1083-g0593b83"))) transactionPath= dataUri +"/transaction";
         }
 
         private String obtainCypherPath(JsonNode serverData) {
@@ -149,6 +158,26 @@ public class Resources {
 
         public String getCypherPath() {
             return cypherPath;
+        }
+
+        public Collection<String> getLabels() {
+            return readListFrom(labelPath);
+        }
+        public Collection<String> getRelationshipTypes() {
+            return readListFrom(relationshipTypesPath);
+        }
+
+        public Collection<String> getPropertyKeys() {
+            return readListFrom(propertyKeysPath);
+        }
+
+        private Collection<String> readListFrom(String uri) {
+            Iterator<JsonNode> it = readJsonFrom(uri).getElements();
+            List<String> result= new ArrayList<>();
+            while (it.hasNext()) {
+                result.add(it.next().asText());
+            }
+            return result;
         }
 
         public String getTransactionPath() {

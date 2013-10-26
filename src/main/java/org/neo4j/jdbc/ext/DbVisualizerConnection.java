@@ -50,6 +50,7 @@ public class DbVisualizerConnection
     @Override
     public ResultSet executeQuery(String query, Map<String, Object> parameters) throws SQLException
     {
+        System.out.println("query = " + query);
         {
             if (query.contains(COLUMNS_QUERY))
             {

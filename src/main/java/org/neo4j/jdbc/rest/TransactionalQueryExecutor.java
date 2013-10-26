@@ -41,6 +41,7 @@ public class TransactionalQueryExecutor implements QueryExecutor {
     private final Version version;
     private final Resources resources;
     private final StreamingParser resultParser;
+    private final Resources.DiscoveryClientResource discovery;
 
     public TransactionalQueryExecutor(String connectionUrl, String user, String password) throws SQLException {
         try
@@ -54,7 +55,7 @@ public class TransactionalQueryExecutor implements QueryExecutor {
                     }
                     resultParser = new StreamingParser(mapper);
 
-                    Resources.DiscoveryClientResource discovery = resources.getDiscoveryResource();
+                    discovery = resources.getDiscoveryResource();
 
                     version = new Version(discovery.getVersion());
 
@@ -185,4 +186,6 @@ public class TransactionalQueryExecutor implements QueryExecutor {
     public void commit() throws SQLException {
         commit(NO_STATEMENTS);
     }
+
+
 }

@@ -206,7 +206,7 @@ class StreamingParser {
                 handleErrors(state);
                 state.consumeLast();
                 if (token==null) {
-                    System.out.println("Match not found, was expected to skip to " + Arrays.toString(tokenOrField) + " found " + foundTokens+" current "+state.getCurrentName());
+//                    System.out.println("Match not found, was expected to skip to " + Arrays.toString(tokenOrField) + " found " + foundTokens+" current "+state.getCurrentName());
                     return false;
                 }
 //                System.err.println("next '"+msg+"' " + token+" "+state.getCurrentName()+"/"+state.getCurrentToken());
