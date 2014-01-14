@@ -1,8 +1,13 @@
 package org.neo4j.jdbc.embedded;
 
 import org.junit.Test;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.jdbc.ExecutionResult;
 import org.neo4j.test.ImpermanentGraphDatabase;
+import org.neo4j.test.TestGraphDatabaseFactory;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
@@ -14,11 +19,21 @@ import static org.junit.Assert.assertEquals;
 public class EmbeddedQueryExecutorTest {
     @Test
     public void testDoExecuteQuery() throws Exception {
-        final EmbeddedQueryExecutor executor = new EmbeddedQueryExecutor(new ImpermanentGraphDatabase());
-        final ExecutionResult result = executor.executeQuery("start n=node(0) return ID(n) as id", null, true);
+        GraphDatabaseService db = new TestGraphDatabaseFactory().newImpermanentDatabase();
+        long nodeId =createNode(db);
+        final EmbeddedQueryExecutor executor = new EmbeddedQueryExecutor(db);
+        final ExecutionResult result = executor.executeQuery("start n=node("+nodeId+") return ID(n) as id", null, true);
         assertEquals(asList("id"),result.columns());
         final Object[] row = result.iterator().next();
         assertEquals(1, row.length);
-        assertEquals(0L, row[0]);
+        assertEquals(nodeId, row[0]);
+    }
+
+    private long createNode(GraphDatabaseService db) {
+        try (Transaction tx=db.beginTx()) {
+            Node node = db.createNode();
+            tx.success();
+            return node.getId();
+        }
     }
 }

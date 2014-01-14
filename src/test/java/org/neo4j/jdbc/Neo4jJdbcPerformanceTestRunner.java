@@ -32,12 +32,17 @@ public class Neo4jJdbcPerformanceTestRunner {
     private void createData(GraphDatabaseService gdb, int count) {
         final DynamicRelationshipType type = DynamicRelationshipType.withName("RELATED_TO");
         final Transaction tx = gdb.beginTx();
-        final Node node = gdb.getReferenceNode();
-        for (int i=0;i<count;i++) {
-            final Node n = gdb.createNode();
-            node.createRelationshipTo(n, type);
+        try {
+            final Node node = gdb.createNode();
+            for (int i=0;i<count;i++) {
+                final Node n = gdb.createNode();
+                node.createRelationshipTo(n, type);
+            }
+            tx.success();
+        } finally {
+            tx.close();
         }
-        tx.success();tx.close();
+
     }
 
     private long execute(final Connection con) throws SQLException {

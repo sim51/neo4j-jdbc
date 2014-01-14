@@ -25,6 +25,8 @@ import org.junit.*;
 import org.neo4j.cypherdsl.Property;
 import org.neo4j.cypherdsl.expression.Expression;
 import org.neo4j.graphdb.*;
+import org.neo4j.helpers.collection.IteratorUtil;
+import org.neo4j.tooling.GlobalGraphOperations;
 
 import java.sql.*;
 
@@ -61,7 +63,7 @@ public class Neo4jConnectionTest extends Neo4jJdbcTest {
     @Test
     public void testAccessData() throws Exception {
         try (Transaction tx = gdb.beginTx()) {
-            final Node root = gdb.getReferenceNode();
+            final Node root = IteratorUtil.single(GlobalGraphOperations.at(gdb).getAllNodesWithLabel(DynamicLabel.label("MetaDataRoot")));
             final Relationship typeRel = root.getSingleRelationship(DynamicRelationshipType.withName("TYPE"), Direction.OUTGOING);
             final Node typeNode = typeRel.getEndNode();
             assertEquals("test", typeNode.getProperty("type"));

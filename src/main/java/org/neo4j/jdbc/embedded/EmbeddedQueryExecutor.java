@@ -15,6 +15,7 @@ import org.neo4j.jdbc.ExecutionResult;
 import org.neo4j.jdbc.QueryExecutor;
 import org.neo4j.jdbc.Version;
 import org.neo4j.kernel.GraphDatabaseAPI;
+import org.neo4j.kernel.KernelData;
 
 /**
  * @author mh
@@ -131,6 +132,6 @@ public class EmbeddedQueryExecutor implements QueryExecutor {
 
     @Override
     public Version getVersion() {
-        return new Version(((GraphDatabaseAPI)gds).getKernelData().version().getRevision());
+        return new Version(((GraphDatabaseAPI)gds).getDependencyResolver().resolveDependency(KernelData.class).version().getRevision());
     }
 }

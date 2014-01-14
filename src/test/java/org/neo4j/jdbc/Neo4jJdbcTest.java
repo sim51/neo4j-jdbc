@@ -23,10 +23,8 @@ package org.neo4j.jdbc;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.neo4j.graphdb.DynamicRelationshipType;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.*;
+import org.neo4j.kernel.KernelData;
 import org.neo4j.server.web.WebServer;
 import org.neo4j.test.ImpermanentGraphDatabase;
 import org.neo4j.test.TestGraphDatabaseFactory;
@@ -48,12 +46,22 @@ import static org.neo4j.helpers.collection.MapUtil.stringMap;
 @RunWith(Parameterized.class)
 @Ignore
 public abstract class Neo4jJdbcTest {
-    protected static final String REFERENCE_NODE_ID_QUERY = "start n=node(0) return ID(n) as id";
+
+    protected static String nodeByIdQuery(long nodeId) {
+        return "start n=node("+nodeId+") return ID(n) as id";
+    }
+
     protected Neo4jConnection conn;
     protected static ImpermanentGraphDatabase gdb;
     private static WebServer webServer;
     protected final Mode mode;
     private Transaction tx;
+
+    protected long createNode() throws SQLException {
+        ResultSet rs = conn.createStatement().executeQuery("merge (n:Root {name:'root'}) return id(n) as id");
+        rs.next();
+        return rs.getLong("id");
+    }
 
     public enum Mode { embedded, server, server_tx, server_auth }
     @Parameterized.Parameters
@@ -73,7 +81,7 @@ public abstract class Neo4jJdbcTest {
         System.out.println("Mode "+mode);
         final Driver driver = new Driver();
         final Properties props = new Properties();
-        gdb.cleanContent(true);
+        gdb.cleanContent();
         switch (mode) {
             case embedded:
                 props.put("db",gdb);
@@ -120,7 +128,7 @@ public abstract class Neo4jJdbcTest {
 
     @Before
     public void setUp() throws SQLException, Exception {
-        gdb.cleanContent(true);
+        gdb.cleanContent();
     }
 
     protected String jdbcUrl() {
@@ -142,16 +150,19 @@ public abstract class Neo4jJdbcTest {
         // WHERE type.type={typename}
         // RETURN type.type,property.name,property.type
         final Transaction tx = gdb.beginTx();
-        final Node root = gdb.getReferenceNode();
-        final Node type = gdb.createNode();
-        type.setProperty("type",typeName);
-        root.createRelationshipTo(type, DynamicRelationshipType.withName("TYPE"));
-        final Node property = gdb.createNode();
-        property.setProperty("name",propName);
-        property.setProperty("type",propType);
-        type.createRelationshipTo(property,DynamicRelationshipType.withName("HAS_PROPERTY"));
-        tx.success();
-        tx.finish();
+        try {
+            final Node root = gdb.createNode(DynamicLabel.label("MetaDataRoot"));
+            final Node type = gdb.createNode();
+            type.setProperty("type",typeName);
+            root.createRelationshipTo(type, DynamicRelationshipType.withName("TYPE"));
+            final Node property = gdb.createNode();
+            property.setProperty("name",propName);
+            property.setProperty("type",propType);
+            type.createRelationshipTo(property,DynamicRelationshipType.withName("HAS_PROPERTY"));
+            tx.success();
+        } finally {
+            tx.finish();
+        }
     }
 
     protected void dumpColumns(ResultSet rs) throws SQLException {
@@ -163,7 +174,7 @@ public abstract class Neo4jJdbcTest {
     }
 
     protected Version getVersion() {
-        final String releaseVersion = gdb.getKernelData().version().getRevision();
+        final String releaseVersion = gdb.getDependencyResolver().resolveDependency(KernelData.class).version().getRevision();
         return new Version(releaseVersion);
     }
 

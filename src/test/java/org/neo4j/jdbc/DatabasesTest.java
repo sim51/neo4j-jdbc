@@ -4,6 +4,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 import org.neo4j.jdbc.embedded.EmbeddedDatabases;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 import org.neo4j.kernel.EmbeddedReadOnlyGraphDatabase;
@@ -63,9 +65,17 @@ public class DatabasesTest {
     @Ignore("Not possible anymore to have a rw and ro-db accesssing the same store-files")
     public void testLocateFileDbReadonly() throws Exception {
         FileUtils.deleteRecursively(new File("target/test-db-ro"));
-        new EmbeddedGraphDatabase("target/test-db-ro");
-        final Properties props = new Properties();props.setProperty("readonly", "true");
-        final GraphDatabaseService db = databases.createDatabase(":file:target/test-db-ro", props);
-        assertTrue(db instanceof EmbeddedReadOnlyGraphDatabase);
+        GraphDatabaseService db0 = new GraphDatabaseFactory().newEmbeddedDatabase("target/test-db-ro");
+        try {
+            final Properties props = new Properties();props.setProperty("readonly", "true");
+                final GraphDatabaseService db = databases.createDatabase(":file:target/test-db-ro", props);
+            try {
+                assertTrue(db instanceof EmbeddedReadOnlyGraphDatabase);
+            } finally {
+                db.shutdown();
+            }
+        } finally {
+            db0.shutdown();
+        }
     }
 }

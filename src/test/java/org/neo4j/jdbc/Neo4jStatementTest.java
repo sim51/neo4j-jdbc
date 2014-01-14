@@ -20,8 +20,9 @@
 
 package org.neo4j.jdbc;
 
-import org.junit.Ignore;
+import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.Node;
 import org.neo4j.tooling.GlobalGraphOperations;
 
@@ -38,18 +39,27 @@ import static org.junit.Assert.assertEquals;
  */
 public class Neo4jStatementTest extends Neo4jJdbcTest {
 
+    private long nodeId;
+
     public Neo4jStatementTest(Mode mode) throws SQLException {
         super(mode);
     }
 
+    @Override
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+        nodeId = createNode();
+    }
+
     @Test
     public void testExecuteStatement() throws Exception {
-        final ResultSet rs = conn.createStatement().executeQuery(REFERENCE_NODE_ID_QUERY);
+        final ResultSet rs = conn.createStatement().executeQuery(nodeByIdQuery(nodeId));
         assertTrue(rs.next());
-        assertEquals(0, ((Number)rs.getObject("id")).intValue());
-        assertEquals(0L, rs.getLong("id"));
-        assertEquals(0, ((Number)rs.getObject(1)).intValue());
-        assertEquals(0L, rs.getLong(1));
+        assertEquals(nodeId, ((Number)rs.getObject("id")).intValue());
+        assertEquals(nodeId, rs.getLong("id"));
+        assertEquals(nodeId, ((Number)rs.getObject(1)).intValue());
+        assertEquals(nodeId, rs.getLong(1));
         assertFalse(rs.next());
     }
 
@@ -62,26 +72,25 @@ public class Neo4jStatementTest extends Neo4jJdbcTest {
     @Test
     public void testExecutePreparedStatement() throws Exception {
         final PreparedStatement ps = conn.prepareStatement("start n=node({1}) return ID(n) as id");
-        ps.setLong(1,0L);
+        ps.setLong(1,nodeId);
         final ResultSet rs = ps.executeQuery();
         assertTrue(rs.next());
-        assertEquals(0, ((Number)rs.getObject("id")).intValue());
-        assertEquals(0L, rs.getLong("id"));
-        assertEquals(0, ((Number)rs.getObject(1)).intValue());
-        assertEquals(0L, rs.getLong(1));
+        assertEquals(nodeId, ((Number)rs.getObject("id")).intValue());
+        assertEquals(nodeId, rs.getLong("id"));
+        assertEquals(nodeId, ((Number)rs.getObject(1)).intValue());
+        assertEquals(nodeId, rs.getLong(1));
         assertFalse(rs.next());
     }
 
     @Test
     public void testCreateNodeStatement() throws Exception {
-        final PreparedStatement ps = conn.prepareStatement("create (n {name:{1}})");
+        final PreparedStatement ps = conn.prepareStatement("create (n:User {name:{1}})");
         ps.setString(1, "test");
         // TODO int count = ps.executeUpdate();
         int count = 0;
         ps.executeUpdate();
         begin();
-        for (Node node : GlobalGraphOperations.at(gdb).getAllNodes()) {
-            if (node.equals(gdb.getReferenceNode())) continue;
+        for (Node node : GlobalGraphOperations.at(gdb).getAllNodesWithLabel(DynamicLabel.label("User"))) {
             assertEquals("test", node.getProperty("name"));
             count ++;
         }
@@ -97,20 +106,20 @@ public class Neo4jStatementTest extends Neo4jJdbcTest {
 
     @Test(expected = SQLDataException.class)
     public void testColumnZero() throws Exception {
-        final ResultSet rs = conn.createStatement().executeQuery(REFERENCE_NODE_ID_QUERY);
+        final ResultSet rs = conn.createStatement().executeQuery(nodeByIdQuery(nodeId));
         assertTrue(rs.next());
-        assertEquals(0, rs.getObject(0));
+        assertEquals(nodeId, rs.getObject(0));
         assertFalse(rs.next());
     }
     @Test(expected = SQLDataException.class)
     public void testColumnLargerThan() throws Exception {
-        final ResultSet rs = conn.createStatement().executeQuery(REFERENCE_NODE_ID_QUERY);
+        final ResultSet rs = conn.createStatement().executeQuery(nodeByIdQuery(nodeId));
         rs.next();
         rs.getObject(2);
     }
     @Test(expected = SQLException.class)
     public void testInvalidColumnName() throws Exception {
-        final ResultSet rs = conn.createStatement().executeQuery(REFERENCE_NODE_ID_QUERY);
+        final ResultSet rs = conn.createStatement().executeQuery(nodeByIdQuery(nodeId));
         rs.next();
         rs.getObject("foo");
     }
