@@ -33,6 +33,7 @@ import java.sql.SQLException;
 
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
+import static org.neo4j.helpers.collection.MapUtil.map;
 
 /**
  * TODO
@@ -86,6 +87,22 @@ public class Neo4jStatementTest extends Neo4jJdbcTest {
     public void testCreateNodeStatement() throws Exception {
         final PreparedStatement ps = conn.prepareStatement("create (n:User {name:{1}})");
         ps.setString(1, "test");
+        // TODO int count = ps.executeUpdate();
+        int count = 0;
+        ps.executeUpdate();
+        begin();
+        for (Node node : GlobalGraphOperations.at(gdb).getAllNodesWithLabel(DynamicLabel.label("User"))) {
+            assertEquals("test", node.getProperty("name"));
+            count ++;
+        }
+        done();
+        assertEquals(1, count);
+    }
+
+    @Test
+    public void testCreateNodeStatementWithMapParam() throws Exception {
+        final PreparedStatement ps = conn.prepareStatement("create (n:User {1})");
+        ps.setObject(1, map("name","test"));
         // TODO int count = ps.executeUpdate();
         int count = 0;
         ps.executeUpdate();

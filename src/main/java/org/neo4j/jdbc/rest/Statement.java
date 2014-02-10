@@ -23,7 +23,7 @@ public class Statement {
     public ObjectNode toJson(ObjectMapper mapper) {
         ObjectNode queryNode = mapper.createObjectNode();
         queryNode.put("statement", escapeQuery(query));
-        if (params != null && !params.isEmpty()) queryNode.put("parameters", parametersNode(params, mapper));
+        if (params != null && !params.isEmpty()) queryNode.put("parameters", JsonUtils.serialize(params, mapper));
         return queryNode;
     }
 
@@ -34,41 +34,6 @@ public class Statement {
 
     private String escapeQuery(String query) {
         return query.replace('\"', '\'').replace('\n', ' ');
-    }
-
-    private ObjectNode parametersNode(Map<String, Object> parameters, ObjectMapper mapper) {
-        ObjectNode params = mapper.createObjectNode();
-        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
-            final String name = entry.getKey();
-            final Object value = entry.getValue();
-            if (value == null) {
-                params.putNull(name);
-            } else if (value instanceof String)
-                params.put(name, value.toString());
-            else if (value instanceof Integer)
-                params.put(name, (Integer) value);
-            else if (value instanceof Long)
-                params.put(name, (Long) value);
-            else if (value instanceof Boolean)
-                params.put(name, (Boolean) value);
-            else if (value instanceof BigDecimal)
-                params.put(name, (BigDecimal) value);
-            else if (value instanceof Double)
-                params.put(name, (Double) value);
-            else if (value instanceof byte[])
-                params.put(name, (byte[]) value);
-            else if (value instanceof Float)
-                params.put(name, (Float) value);
-            else if (value instanceof Number) {
-                final Number number = (Number) value;
-                if (number.longValue() == number.doubleValue()) {
-                    params.put(name, number.longValue());
-                } else {
-                    params.put(name, number.doubleValue());
-                }
-            }
-        }
-        return params;
     }
 
     public static ArrayNode toJson(ObjectMapper mapper, Statement... statements) {
