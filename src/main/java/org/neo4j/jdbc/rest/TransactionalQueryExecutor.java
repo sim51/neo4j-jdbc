@@ -17,6 +17,7 @@ import org.restlet.resource.ResourceException;
 import org.restlet.routing.Filter;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.sql.SQLException;
 import java.sql.SQLNonTransientConnectionException;
 import java.util.Collections;
@@ -128,8 +129,22 @@ public class TransactionalQueryExecutor implements QueryExecutor {
         this.transaction.set(null);
     }
 
-    private Iterator<ExecutionResult> toResults(Representation result, Statement[] statements) throws SQLException {
-        return resultParser.toResults(resultParser.obtainParser(result), statements);
+    private Iterator<ExecutionResult> toResults(final Representation result, Statement[] statements) throws SQLException {
+        final Reader reader = getReader(result);
+        AutoCloseable closeable = new AutoCloseable() {
+            public void close() throws Exception {
+                reader.close();
+            }
+        };
+        return resultParser.toResults(resultParser.obtainParser(reader), closeable, statements);
+    }
+
+    private Reader getReader(Representation result) {
+        try {
+            return result.getReader();
+        } catch (IOException e) {
+            throw new RuntimeException("Error accessing response reader",e);
+        }
     }
 
     private String toString(Object value) {

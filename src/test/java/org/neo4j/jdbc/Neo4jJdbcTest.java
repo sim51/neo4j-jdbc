@@ -66,8 +66,8 @@ public abstract class Neo4jJdbcTest {
     public enum Mode { embedded, server, server_tx, server_auth }
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
-        return Arrays.<Object[]>asList(new Object[]{Mode.embedded},new Object[]{Mode.server},new Object[]{Mode.server_auth},new Object[]{Mode.server_tx});
-//        return Arrays.<Object[]>asList(new Object[]{Mode.server_tx});
+//        return Arrays.<Object[]>asList(new Object[]{Mode.embedded},new Object[]{Mode.server},new Object[]{Mode.server_auth},new Object[]{Mode.server_tx});
+        return Arrays.<Object[]>asList(new Object[]{Mode.server_tx});
 //        return Arrays.<Object[]>asList(new Object[]{Mode.embedded});
     }
 

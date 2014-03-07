@@ -20,6 +20,9 @@
 
 package org.neo4j.jdbc;
 
+import org.neo4j.graphdb.ResourceIterable;
+import org.neo4j.helpers.collection.ClosableIterator;
+
 import java.sql.*;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -69,6 +72,15 @@ public class IteratorResultSet extends AbstractResultSet
     @Override
     public void close() throws SQLException
     {
+        if (data instanceof AutoCloseable) {
+            try {
+                ((AutoCloseable) data).close();
+            } catch (Exception e) {
+                log.warn("Couldn't close resultset",e);
+            }
+        } else if (data instanceof ClosableIterator) {
+            ((ClosableIterator)data).close();
+        }
         super.close();
     }
 

@@ -4,6 +4,7 @@ import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.neo4j.helpers.collection.ClosableIterator;
 import org.neo4j.jdbc.ExecutionResult;
 import org.restlet.representation.Representation;
 
@@ -87,17 +88,17 @@ class StreamingParser {
     }
 
     ExecutionResult nextResult(final ParserState state) {
-        return nextResult(state,null);
+        return nextResult(state,null,null);
     }
 
     // {"results":[{"columns":["ids"],"data":[{"row":[{"ids":[1,2,3]}]}]}],"errors":[]}
-    ExecutionResult nextResult(final ParserState state, final EndCallback endCallback) {
+    ExecutionResult nextResult(final ParserState state, final EndCallback endCallback, final AutoCloseable closeable) {
         if (!skipTo(state,"nextResult1", JsonToken.START_OBJECT, "columns")) return null;
         final List<String> columns = readList(state);
 //        System.out.println("columns = " + columns);
         final int cols = columns.size();
         skipTo(state,"nextResult2", "data", JsonToken.START_ARRAY);
-        return new ExecutionResult(columns, new Iterator<Object[]>() {
+        return new ExecutionResult(columns, new ClosableIterator<Object[]>() {
             boolean last=false;
             Object[] nextRow = null;
 
@@ -109,6 +110,22 @@ class StreamingParser {
                 if (row!=null) skipTo(state,"nextResult3",JsonToken.END_OBJECT);
                 if (row!=null && row.length != cols) throw new IllegalStateException("Row length "+row.length+" differs from column definition "+columns+" row details "+Arrays.toString(row));
                 return row;
+            }
+
+            @Override
+            public void close() {
+                if (closeable!=null) {
+                    try {
+                        closeable.close();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    // todo better
+                    while (hasNext()) {
+                        nextRow();
+                    }
+                }
             }
 
             public boolean hasNext() {
@@ -156,7 +173,7 @@ class StreamingParser {
     }
 
     // {"results":[{"columns":["ids"],"data":[{"row":[{"ids":[1,2,3]}]}]}],"errors":[]}
-    Iterator<ExecutionResult> toResults(final JsonParser parser, Statement... statements) throws SQLException {
+    Iterator<ExecutionResult> toResults(final JsonParser parser, final AutoCloseable closeable, Statement... statements) throws SQLException {
         try {
             final ParserState state = ParserState.from(parser);
             skipTo(state, "toResults1", JsonToken.START_OBJECT, "results", JsonToken.START_ARRAY); // { "results"
@@ -171,7 +188,7 @@ class StreamingParser {
                             public void endReached() {
                                 hasNext();
                             }
-                        });
+                        }, closeable);
                         if (nextResult==null) {
                             last = true;
                             skipTo(state, "toResults2",JsonToken.END_OBJECT, JsonToken.END_ARRAY, JsonToken.END_OBJECT);

@@ -71,7 +71,7 @@ public class ExecutionResult implements Iterable<Object[]>, Closeable
 
     @Override
     public void close() {
-        if (result instanceof Closeable) {
+        if (result instanceof AutoCloseable) {
             try {
                 ((Closeable)result).close();
             } catch (IOException e) {

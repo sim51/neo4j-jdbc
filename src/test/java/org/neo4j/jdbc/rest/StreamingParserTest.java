@@ -117,7 +117,7 @@ public class StreamingParserTest {
         final String resultJson2 = "{\"columns\":[\"d\",\"e\",\"f\"],\"data\": [{\"row\":[4,5,6]}]}";
         final String json = "{\"results\":["+resultJson1+","+resultJson2+"]}";
         final JsonParser parser = streamingParser.obtainParser(new StringReader(json));
-        final Iterator<ExecutionResult> results = streamingParser.toResults(parser, STATEMENT,STATEMENT);
+        final Iterator<ExecutionResult> results = streamingParser.toResults(parser, null, STATEMENT,STATEMENT);
         ExecutionResult result = results.next();
         assertEquals(asList("a","b","c"),result.columns());
         final Iterator<Object[]> rows = result.iterator();
