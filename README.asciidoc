@@ -29,7 +29,7 @@ try(Statement stmt = con.createStatement())
     ResultSet rs = stmt.executeQuery("MATCH (n:User) RETURN n.name");
     while(rs.next())
     {
-        System.out.println(rs.getString("n.name");
+        System.out.println(rs.getString("n.name"));
     }
 }
 
