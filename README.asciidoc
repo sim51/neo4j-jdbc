@@ -12,7 +12,7 @@ The driver can be used in conjunction with
 * an existing Neo4j GraphDatabaseService instance passed to the driver
 * an temporary in-memory instance of Neo4j
 
-=== Minimum Viable Snippet ==
+=== Minimum Viable Snippet ===
 
 -----------------------------------------------------------------------------
 // Make sure Neo4j Driver is registered
