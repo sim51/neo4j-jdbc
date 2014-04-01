@@ -14,6 +14,27 @@ Here is a binary download of the http://dist.neo4j.org/neo4j-jdbc/neo4j-jdbc-2.0
 * an existing Neo4j GraphDatabaseService instance passed to the driver
 * an temporary in-memory instance of Neo4j
 
+=== Minimum Viable Snippet ==
+
+-----------------------------------------------------------------------------
+// Make sure Neo4j Driver is registered
+Class.forName("org.neo4j.jdbc.Driver");
+
+// Connect
+Connection con = DriverManager.getConnection("jdbc:neo4j://localhost:7474/");
+
+// Querying
+try(Statement stmt = con.createStatement())
+{
+    ResultSet rs = stmt.executeQuery("MATCH (n:User) RETURN n.name");
+    while(rs.next())
+    {
+        System.out.println(rs.getString("n.name");
+    }
+}
+
+-----------------------------------------------------------------------------
+
 === Usage ===
 * Add the JDBC driver jar file to your applications classpath
 * Load the driver with the class +org.neo4j.jdbc.Driver+
