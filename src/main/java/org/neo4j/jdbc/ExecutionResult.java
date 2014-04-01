@@ -20,10 +20,9 @@
 
 package org.neo4j.jdbc;
 
-import org.neo4j.helpers.collection.ClosableIterator;
+import org.neo4j.jdbc.util.Closer;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -71,14 +70,6 @@ public class ExecutionResult implements Iterable<Object[]>, Closeable
 
     @Override
     public void close() {
-        if (result instanceof AutoCloseable) {
-            try {
-                ((Closeable)result).close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        } else if (result instanceof ClosableIterator) {
-            ((ClosableIterator)result).close();
-        }
+        Closer.close(result);
     }
 }

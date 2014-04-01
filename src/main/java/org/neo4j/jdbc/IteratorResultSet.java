@@ -20,8 +20,7 @@
 
 package org.neo4j.jdbc;
 
-import org.neo4j.graphdb.ResourceIterable;
-import org.neo4j.helpers.collection.ClosableIterator;
+import org.neo4j.jdbc.util.ClosableIterator;
 
 import java.sql.*;
 import java.util.Arrays;
