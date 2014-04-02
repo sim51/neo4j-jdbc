@@ -20,42 +20,47 @@
 
 package org.neo4j.jdbc;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.sql.Statement;
 import java.util.Collections;
 
 /**
  * Implementation of JDBC Statement.
  */
 public class Neo4jStatement
-    implements Statement
+        implements Statement
 {
     protected Neo4jConnection connection;
     protected ResultSet resultSet;
     protected SQLWarning sqlWarning;
 
-    public Neo4jStatement(Neo4jConnection connection)
+    public Neo4jStatement( Neo4jConnection connection )
     {
         this.connection = connection;
     }
 
     @Override
-    public ResultSet executeQuery(String s) throws SQLException
+    public ResultSet executeQuery( String s ) throws SQLException
     {
-        execute(s);
+        execute( s );
         return resultSet;
     }
 
     @Override
-    public int executeUpdate(String s) throws SQLException
+    public int executeUpdate( String s ) throws SQLException
     {
-        execute(s);
+        execute( s );
         return 0;
     }
 
     @Override
     public void close() throws SQLException
     {
-        if (resultSet!=null) {
+        if ( resultSet != null )
+        {
             resultSet.close();
         }
         connection = null;
@@ -70,7 +75,7 @@ public class Neo4jStatement
     }
 
     @Override
-    public void setMaxFieldSize(int i) throws SQLException
+    public void setMaxFieldSize( int i ) throws SQLException
     {
     }
 
@@ -81,12 +86,12 @@ public class Neo4jStatement
     }
 
     @Override
-    public void setMaxRows(int i) throws SQLException
+    public void setMaxRows( int i ) throws SQLException
     {
     }
 
     @Override
-    public void setEscapeProcessing(boolean b) throws SQLException
+    public void setEscapeProcessing( boolean b ) throws SQLException
     {
     }
 
@@ -97,7 +102,7 @@ public class Neo4jStatement
     }
 
     @Override
-    public void setQueryTimeout(int i) throws SQLException
+    public void setQueryTimeout( int i ) throws SQLException
     {
     }
 
@@ -119,30 +124,37 @@ public class Neo4jStatement
     }
 
     @Override
-    public void setCursorName(String s) throws SQLException
+    public void setCursorName( String s ) throws SQLException
     {
     }
 
     @Override
-    public boolean execute(String s) throws SQLException
+    public boolean execute( String s ) throws SQLException
     {
         try
         {
-            resultSet = connection.executeQuery(connection.nativeSQL(s), Collections.<String, Object>emptyMap());
+            resultSet = connection.executeQuery( connection.nativeSQL( s ), Collections.<String, Object>emptyMap() );
             return true;
-        } catch (SQLWarning e)
+        }
+        catch ( SQLWarning e )
         {
-            if (sqlWarning == null)
+            if ( sqlWarning == null )
+            {
                 sqlWarning = e;
+            }
             else
-                sqlWarning.setNextWarning(e);
+            {
+                sqlWarning.setNextWarning( e );
+            }
             throw e;
-        } catch (SQLException e)
+        }
+        catch ( SQLException e )
         {
             throw e;
-        }catch (Throwable e)
+        }
+        catch ( Throwable e )
         {
-            throw new SQLException(e);
+            throw new SQLException( e );
         }
     }
 
@@ -166,7 +178,7 @@ public class Neo4jStatement
     }
 
     @Override
-    public void setFetchDirection(int i) throws SQLException
+    public void setFetchDirection( int i ) throws SQLException
     {
     }
 
@@ -177,7 +189,7 @@ public class Neo4jStatement
     }
 
     @Override
-    public void setFetchSize(int i) throws SQLException
+    public void setFetchSize( int i ) throws SQLException
     {
     }
 
@@ -200,7 +212,7 @@ public class Neo4jStatement
     }
 
     @Override
-    public void addBatch(String s) throws SQLException
+    public void addBatch( String s ) throws SQLException
     {
     }
 
@@ -222,7 +234,7 @@ public class Neo4jStatement
     }
 
     @Override
-    public boolean getMoreResults(int i) throws SQLException
+    public boolean getMoreResults( int i ) throws SQLException
     {
         return getMoreResults();
     }
@@ -230,43 +242,43 @@ public class Neo4jStatement
     @Override
     public ResultSet getGeneratedKeys() throws SQLException
     {
-        return new ResultSetBuilder().newResultSet(connection);
+        return new ResultSetBuilder().newResultSet( connection );
     }
 
     @Override
-    public int executeUpdate(String s, int i) throws SQLException
+    public int executeUpdate( String s, int i ) throws SQLException
     {
-        return executeUpdate(s);
+        return executeUpdate( s );
     }
 
     @Override
-    public int executeUpdate(String s, int[] ints) throws SQLException
+    public int executeUpdate( String s, int[] ints ) throws SQLException
     {
-        return executeUpdate(s);
+        return executeUpdate( s );
     }
 
     @Override
-    public int executeUpdate(String s, String[] strings) throws SQLException
+    public int executeUpdate( String s, String[] strings ) throws SQLException
     {
-        return executeUpdate(s);
+        return executeUpdate( s );
     }
 
     @Override
-    public boolean execute(String s, int i) throws SQLException
+    public boolean execute( String s, int i ) throws SQLException
     {
-        return execute(s);
+        return execute( s );
     }
 
     @Override
-    public boolean execute(String s, int[] ints) throws SQLException
+    public boolean execute( String s, int[] ints ) throws SQLException
     {
-        return execute(s);
+        return execute( s );
     }
 
     @Override
-    public boolean execute(String s, String[] strings) throws SQLException
+    public boolean execute( String s, String[] strings ) throws SQLException
     {
-        return execute(s);
+        return execute( s );
     }
 
     @Override
@@ -282,7 +294,7 @@ public class Neo4jStatement
     }
 
     @Override
-    public void setPoolable(boolean b) throws SQLException
+    public void setPoolable( boolean b ) throws SQLException
     {
     }
 
@@ -293,21 +305,23 @@ public class Neo4jStatement
     }
 
     @Override
-    public <T> T unwrap(Class<T> tClass) throws SQLException
+    public <T> T unwrap( Class<T> tClass ) throws SQLException
     {
         return (T) this;
     }
 
     @Override
-    public boolean isWrapperFor(Class<?> aClass) throws SQLException
+    public boolean isWrapperFor( Class<?> aClass ) throws SQLException
     {
         return false;
     }
 
-    public void closeOnCompletion() throws SQLException {
+    public void closeOnCompletion() throws SQLException
+    {
     }
 
-    public boolean isCloseOnCompletion() throws SQLException {
+    public boolean isCloseOnCompletion() throws SQLException
+    {
         return false;
     }
 }

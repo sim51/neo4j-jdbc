@@ -20,21 +20,14 @@
 
 package org.neo4j.jdbc;
 
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import org.junit.Test;
+
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.test.ImpermanentGraphDatabase;
-
-import java.security.PrivateKey;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Properties;
 
 /**
  * TODO
@@ -42,21 +35,24 @@ import java.util.Properties;
 public class Neo4jDatabaseMetaDataTest extends Neo4jJdbcTest
 {
 
-    public Neo4jDatabaseMetaDataTest(Mode mode) throws SQLException {
-        super(mode);
+    public Neo4jDatabaseMetaDataTest( Mode mode ) throws SQLException
+    {
+        super( mode );
     }
 
     @Test
     public void testGetTables() throws SQLException
     {
-        createTableMetaData(gdb);
-        ResultSet rs = conn.getMetaData().getTables(null, null, "%", null);
+        createTableMetaData( gdb );
+        ResultSet rs = conn.getMetaData().getTables( null, null, "%", null );
 
-        System.out.println(rs);
+        System.out.println( rs );
     }
 
-    private void createTableMetaData(GraphDatabaseService gdb) {
-        try (Transaction tx = gdb.beginTx()) {
+    private void createTableMetaData( GraphDatabaseService gdb )
+    {
+        try ( Transaction tx = gdb.beginTx() )
+        {
             final Node tables = gdb.createNode();
             final Node table = gdb.createNode();
             final Node column = gdb.createNode();
@@ -67,8 +63,8 @@ public class Neo4jDatabaseMetaDataTest extends Neo4jJdbcTest
     @Test
     public void testGetColumns() throws SQLException
     {
-        ResultSet rs = conn.getMetaData().getColumns(null, null, "%", null);
+        ResultSet rs = conn.getMetaData().getColumns( null, null, "%", null );
 
-        System.out.println(rs);
+        System.out.println( rs );
     }
 }

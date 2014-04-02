@@ -20,15 +20,6 @@
 
 package org.neo4j.jdbc;
 
-import org.junit.*;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.neo4j.graphdb.*;
-import org.neo4j.kernel.KernelData;
-import org.neo4j.server.web.WebServer;
-import org.neo4j.test.ImpermanentGraphDatabase;
-import org.neo4j.test.TestGraphDatabaseFactory;
-
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -36,8 +27,23 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.neo4j.helpers.collection.MapUtil.stringMap;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import org.neo4j.graphdb.DynamicLabel;
+import org.neo4j.graphdb.DynamicRelationshipType;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.kernel.KernelData;
+import org.neo4j.server.web.WebServer;
+import org.neo4j.test.ImpermanentGraphDatabase;
+import org.neo4j.test.TestGraphDatabaseFactory;
 
 /**
  * @author mh
@@ -45,10 +51,12 @@ import static org.neo4j.helpers.collection.MapUtil.stringMap;
  */
 @RunWith(Parameterized.class)
 @Ignore
-public abstract class Neo4jJdbcTest {
+public abstract class Neo4jJdbcTest
+{
 
-    protected static String nodeByIdQuery(long nodeId) {
-        return "start n=node("+nodeId+") return ID(n) as id";
+    protected static String nodeByIdQuery( long nodeId )
+    {
+        return "start n=node(" + nodeId + ") return ID(n) as id";
     }
 
     protected Neo4jConnection conn;
@@ -57,132 +65,170 @@ public abstract class Neo4jJdbcTest {
     protected final Mode mode;
     private Transaction tx;
 
-    protected long createNode() throws SQLException {
-        ResultSet rs = conn.createStatement().executeQuery("merge (n:Root {name:'root'}) return id(n) as id");
+    protected long createNode() throws SQLException
+    {
+        ResultSet rs = conn.createStatement().executeQuery( "merge (n:Root {name:'root'}) return id(n) as id" );
         rs.next();
-        return rs.getLong("id");
+        return rs.getLong( "id" );
     }
 
-    public enum Mode { embedded, server, server_tx, server_auth }
+    public enum Mode
+    {
+        embedded, server, server_tx, server_auth
+    }
+
     @Parameterized.Parameters
-    public static Collection<Object[]> data() {
-//        return Arrays.<Object[]>asList(new Object[]{Mode.embedded},new Object[]{Mode.server},new Object[]{Mode.server_auth},new Object[]{Mode.server_tx});
-        return Arrays.<Object[]>asList(new Object[]{Mode.server_tx});
+    public static Collection<Object[]> data()
+    {
+//        return Arrays.<Object[]>asList(new Object[]{Mode.embedded},new Object[]{Mode.server},
+// new Object[]{Mode.server_auth},new Object[]{Mode.server_tx});
+        return Arrays.<Object[]>asList( new Object[]{Mode.embedded} );
 //        return Arrays.<Object[]>asList(new Object[]{Mode.embedded});
     }
 
     @BeforeClass
-    public static void before() {
+    public static void before()
+    {
         gdb = (ImpermanentGraphDatabase) new TestGraphDatabaseFactory().newImpermanentDatabase();
     }
 
-    public Neo4jJdbcTest(Mode mode) throws SQLException {
+    public Neo4jJdbcTest( Mode mode ) throws SQLException
+    {
         this.mode = mode;
-        System.out.println("Mode "+mode);
+        System.out.println( "Mode " + mode );
         final Driver driver = new Driver();
         final Properties props = new Properties();
         gdb.cleanContent();
-        switch (mode) {
+        switch ( mode )
+        {
             case embedded:
-                props.put("db",gdb);
-                conn = driver.connect("jdbc:neo4j:instance:db", props);
+                props.put( "db", gdb );
+                conn = driver.connect( "jdbc:neo4j:instance:db", props );
                 break;
             case server:
-                if (webServer==null) {
-                    webServer = TestServer.startWebServer(gdb, TestServer.PORT, false);
+                if ( webServer == null )
+                {
+                    webServer = TestServer.startWebServer( gdb, TestServer.PORT, false );
                 }
-                props.setProperty(Driver.LEGACY,"true");
-                conn = driver.connect("jdbc:neo4j://localhost:"+ TestServer.PORT, props);
+                props.setProperty( Driver.LEGACY, "true" );
+                conn = driver.connect( "jdbc:neo4j://localhost:" + TestServer.PORT, props );
                 break;
             case server_tx:
-                if (webServer==null) {
-                    webServer = TestServer.startWebServer(gdb, TestServer.PORT, false);
+                if ( webServer == null )
+                {
+                    webServer = TestServer.startWebServer( gdb, TestServer.PORT, false );
                 }
-                conn = driver.connect("jdbc:neo4j://localhost:"+ TestServer.PORT, props);
+                conn = driver.connect( "jdbc:neo4j://localhost:" + TestServer.PORT, props );
                 break;
             case server_auth:
-                if (webServer==null) {
-                    webServer = TestServer.startWebServer(gdb, TestServer.PORT, true);
+                if ( webServer == null )
+                {
+                    webServer = TestServer.startWebServer( gdb, TestServer.PORT, true );
                 }
-                props.put(Driver.USER,TestAuthenticationFilter.USER);
-                props.put(Driver.PASSWORD,TestAuthenticationFilter.PASSWORD);
-                props.setProperty(Driver.LEGACY, "true");
-                conn = driver.connect("jdbc:neo4j://localhost:"+ TestServer.PORT, props);
+                props.put( Driver.USER, TestAuthenticationFilter.USER );
+                props.put( Driver.PASSWORD, TestAuthenticationFilter.PASSWORD );
+                props.setProperty( Driver.LEGACY, "true" );
+                conn = driver.connect( "jdbc:neo4j://localhost:" + TestServer.PORT, props );
                 break;
         }
     }
 
 
     @AfterClass
-    public static void after() {
-        try {
-            if (webServer!=null) {
+    public static void after()
+    {
+        try
+        {
+            if ( webServer != null )
+            {
                 webServer.stop();
                 webServer = null;
             }
             gdb.shutdown();
-        } catch (Throwable e) {
+        }
+        catch ( Throwable e )
+        {
             e.printStackTrace();
         }
     }
 
     @Before
-    public void setUp() throws SQLException, Exception {
+    public void setUp() throws SQLException, Exception
+    {
         gdb.cleanContent();
     }
 
-    protected String jdbcUrl() {
+    protected String jdbcUrl()
+    {
         return "jdbc:neo4j://localhost:" + TestServer.PORT + "/";
     }
 
     @After
-    public void tearDown() {
-        try {
-            if (conn != null) conn.close();
-        } catch (Throwable e) {
+    public void tearDown()
+    {
+        try
+        {
+            if ( conn != null )
+            {
+                conn.close();
+            }
+        }
+        catch ( Throwable e )
+        {
             e.printStackTrace();
         }
     }
 
-    protected void createTableMetaData(GraphDatabaseService gdb, String typeName, String propName, String propType) {
+    protected void createTableMetaData( GraphDatabaseService gdb, String typeName, String propName, String propType )
+    {
         // CYPHER 1.7 START n=node(0)
         // MATCH (n)-[:TYPE]->(type)-[:HAS_PROPERTY]->(property)
         // WHERE type.type={typename}
         // RETURN type.type,property.name,property.type
         final Transaction tx = gdb.beginTx();
-        try {
-            final Node root = gdb.createNode(DynamicLabel.label("MetaDataRoot"));
+        try
+        {
+            final Node root = gdb.createNode( DynamicLabel.label( "MetaDataRoot" ) );
             final Node type = gdb.createNode();
-            type.setProperty("type",typeName);
-            root.createRelationshipTo(type, DynamicRelationshipType.withName("TYPE"));
+            type.setProperty( "type", typeName );
+            root.createRelationshipTo( type, DynamicRelationshipType.withName( "TYPE" ) );
             final Node property = gdb.createNode();
-            property.setProperty("name",propName);
-            property.setProperty("type",propType);
-            type.createRelationshipTo(property,DynamicRelationshipType.withName("HAS_PROPERTY"));
+            property.setProperty( "name", propName );
+            property.setProperty( "type", propType );
+            type.createRelationshipTo( property, DynamicRelationshipType.withName( "HAS_PROPERTY" ) );
             tx.success();
-        } finally {
+        }
+        finally
+        {
             tx.finish();
         }
     }
 
-    protected void dumpColumns(ResultSet rs) throws SQLException {
+    protected void dumpColumns( ResultSet rs ) throws SQLException
+    {
         final ResultSetMetaData meta = rs.getMetaData();
         final int cols = meta.getColumnCount();
-        for (int col=1;col<cols;col++) {
-            System.out.println(meta.getColumnName(col));
+        for ( int col = 1; col < cols; col++ )
+        {
+            System.out.println( meta.getColumnName( col ) );
         }
     }
 
-    protected Version getVersion() {
-        final String releaseVersion = gdb.getDependencyResolver().resolveDependency(KernelData.class).version().getRevision();
-        return new Version(releaseVersion);
+    protected Version getVersion()
+    {
+        final String releaseVersion = gdb.getDependencyResolver().resolveDependency( KernelData.class ).version().getRevision();
+        return new Version( releaseVersion );
     }
 
-    protected Transaction begin() {
+    protected Transaction begin()
+    {
         return tx = gdb.beginTx();
     }
-    protected void done() {
-        if (tx!=null) {
+
+    protected void done()
+    {
+        if ( tx != null )
+        {
             tx.success();
             tx.close();
         }

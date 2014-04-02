@@ -20,7 +20,17 @@
 
 package org.neo4j.jdbc;
 
-import java.sql.*;
+import java.sql.Array;
+import java.sql.Blob;
+import java.sql.CallableStatement;
+import java.sql.Clob;
+import java.sql.Connection;
+import java.sql.NClob;
+import java.sql.SQLClientInfoException;
+import java.sql.SQLException;
+import java.sql.SQLXML;
+import java.sql.Savepoint;
+import java.sql.Struct;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -30,27 +40,29 @@ import java.util.concurrent.Executor;
  * @author mh
  * @since 12.06.12
  */
-public abstract class AbstractConnection implements Connection {
+public abstract class AbstractConnection implements Connection
+{
     protected final Properties clientInfo;
 
-    public AbstractConnection() {
+    public AbstractConnection()
+    {
         clientInfo = new Properties();
     }
 
     @Override
-    public CallableStatement prepareCall(String sql) throws SQLException
+    public CallableStatement prepareCall( String sql ) throws SQLException
     {
         return null;
     }
 
     @Override
-    public String nativeSQL(String sql) throws SQLException
+    public String nativeSQL( String sql ) throws SQLException
     {
         return sql;
     }
 
     @Override
-    public void setCatalog(String catalog) throws SQLException
+    public void setCatalog( String catalog ) throws SQLException
     {
     }
 
@@ -61,7 +73,7 @@ public abstract class AbstractConnection implements Connection {
     }
 
     @Override
-    public void setTransactionIsolation(int level) throws SQLException
+    public void setTransactionIsolation( int level ) throws SQLException
     {
     }
 
@@ -72,41 +84,41 @@ public abstract class AbstractConnection implements Connection {
     }
 
     @Override
-    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency) throws SQLException
+    public CallableStatement prepareCall( String sql, int resultSetType, int resultSetConcurrency ) throws SQLException
     {
         return null;
     }
 
     @Override
-    public void setTypeMap(Map<String, Class<?>> map) throws SQLException
+    public void setTypeMap( Map<String, Class<?>> map ) throws SQLException
     {
     }
 
     @Override
-    public void setHoldability(int holdability) throws SQLException
+    public void setHoldability( int holdability ) throws SQLException
     {
     }
 
     @Override
-    public Array createArrayOf(String typeName, Object[] elements) throws SQLException
-    {
-        return null;
-    }
-
-    @Override
-    public Struct createStruct(String typeName, Object[] attributes) throws SQLException
+    public Array createArrayOf( String typeName, Object[] elements ) throws SQLException
     {
         return null;
     }
 
     @Override
-    public <T> T unwrap(Class<T> iface) throws SQLException
+    public Struct createStruct( String typeName, Object[] attributes ) throws SQLException
+    {
+        return null;
+    }
+
+    @Override
+    public <T> T unwrap( Class<T> iface ) throws SQLException
     {
         return (T) this;
     }
 
     @Override
-    public boolean isWrapperFor(Class<?> iface) throws SQLException
+    public boolean isWrapperFor( Class<?> iface ) throws SQLException
     {
         return false;
     }
@@ -136,7 +148,8 @@ public abstract class AbstractConnection implements Connection {
     }
 
     @Override
-    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException
+    public CallableStatement prepareCall( String sql, int resultSetType, int resultSetConcurrency,
+                                          int resultSetHoldability ) throws SQLException
     {
         return null;
     }
@@ -154,37 +167,37 @@ public abstract class AbstractConnection implements Connection {
     }
 
     @Override
-    public Savepoint setSavepoint(String name) throws SQLException
+    public Savepoint setSavepoint( String name ) throws SQLException
     {
         return null;
     }
 
     @Override
-    public void rollback(Savepoint savepoint) throws SQLException
+    public void rollback( Savepoint savepoint ) throws SQLException
     {
     }
 
     @Override
-    public void releaseSavepoint(Savepoint savepoint) throws SQLException
+    public void releaseSavepoint( Savepoint savepoint ) throws SQLException
     {
     }
 
     @Override
-    public void setClientInfo(String name, String value) throws SQLClientInfoException
+    public void setClientInfo( String name, String value ) throws SQLClientInfoException
     {
-        clientInfo.setProperty(name,value);
+        clientInfo.setProperty( name, value );
     }
 
     @Override
-    public void setClientInfo(Properties properties) throws SQLClientInfoException
+    public void setClientInfo( Properties properties ) throws SQLClientInfoException
     {
-        clientInfo.putAll(properties);
+        clientInfo.putAll( properties );
     }
 
     @Override
-    public String getClientInfo(String name) throws SQLException
+    public String getClientInfo( String name ) throws SQLException
     {
-        return clientInfo.getProperty(name);
+        return clientInfo.getProperty( name );
     }
 
     @Override
@@ -198,23 +211,28 @@ public abstract class AbstractConnection implements Connection {
     {
         return new HashMap<String, Class<?>>();
     }
-    
-    public void setSchema(String schema) throws SQLException {
-       
+
+    public void setSchema( String schema ) throws SQLException
+    {
+
     }
 
-    public String getSchema() throws SQLException {
+    public String getSchema() throws SQLException
+    {
         return null;
     }
 
-    public void abort(Executor executor) throws SQLException {
+    public void abort( Executor executor ) throws SQLException
+    {
     }
 
-    public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+    public void setNetworkTimeout( Executor executor, int milliseconds ) throws SQLException
+    {
     }
 
-    public int getNetworkTimeout() throws SQLException {
+    public int getNetworkTimeout() throws SQLException
+    {
         return 0;
     }
-    
+
 }

@@ -20,18 +20,16 @@
 
 package org.neo4j.jdbc;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
-* @author mh
-* @since 15.06.12
-*/
-public interface QueryExecutor {
-    ExecutionResult executeQuery(String query, Map<String, Object> parameters, boolean autoCommit) throws Exception;
+ * @author mh
+ * @since 15.06.12
+ */
+public interface QueryExecutor
+{
+    ExecutionResult executeQuery( String query, Map<String, Object> parameters, boolean autoCommit ) throws Exception;
 
     void stop() throws Exception;
 
@@ -41,17 +39,24 @@ public interface QueryExecutor {
 
     void rollback() throws Exception;
 
-    public class Metadata {
+    public class Metadata
+    {
         String label;
-        Map<String,Object> props;
-        Map<String,Metadata> rels;  // key == -[:%s {%s}]-> or -[:%s]-> or <-[:%s {%s}]-
+        Map<String, Object> props;
+        Map<String, Metadata> rels;  // key == -[:%s {%s}]-> or -[:%s]-> or <-[:%s {%s}]-
 
-        public String toString() { return String.format("(:%s {%s})",label,props); }
-        public Map<String,Object> toMap() {
-            Map<String, Object> result=new LinkedHashMap<>();
-            result.putAll(props);
-            for (Map.Entry<String, Metadata> entry : rels.entrySet()) {
-                result.put(entry.getKey(),entry.getValue().toString());
+        public String toString()
+        {
+            return String.format( "(:%s {%s})", label, props );
+        }
+
+        public Map<String, Object> toMap()
+        {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.putAll( props );
+            for ( Map.Entry<String, Metadata> entry : rels.entrySet() )
+            {
+                result.put( entry.getKey(), entry.getValue().toString() );
             }
             return result;
         }

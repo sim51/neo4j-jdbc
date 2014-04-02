@@ -20,7 +20,12 @@
 
 package org.neo4j.jdbc;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.RowIdLifetime;
+import java.sql.SQLException;
+import java.sql.Types;
 
 /**
  * Provides metadata about a Neo4j database. Tables are implemented with type nodes, and columns are property nodes
@@ -31,7 +36,7 @@ public class Neo4jDatabaseMetaData
 {
     private Neo4jConnection connection;
 
-    public Neo4jDatabaseMetaData(Neo4jConnection connection)
+    public Neo4jDatabaseMetaData( Neo4jConnection connection )
     {
         this.connection = connection;
     }
@@ -57,7 +62,7 @@ public class Neo4jDatabaseMetaData
     @Override
     public String getUserName() throws SQLException
     {
-        return connection.getProperties().getProperty("user");
+        return connection.getProperties().getProperty( "user" );
     }
 
     @Override
@@ -111,7 +116,7 @@ public class Neo4jDatabaseMetaData
     @Override
     public String getDriverVersion() throws SQLException
     {
-        return connection.getDriver().getMajorVersion()+"."+connection.getDriver().getMinorVersion();
+        return connection.getDriver().getMajorVersion() + "." + connection.getDriver().getMinorVersion();
     }
 
     @Override
@@ -265,7 +270,7 @@ public class Neo4jDatabaseMetaData
     }
 
     @Override
-    public boolean supportsConvert(int i, int i1) throws SQLException
+    public boolean supportsConvert( int i, int i1 ) throws SQLException
     {
         return false;
     }
@@ -715,7 +720,7 @@ public class Neo4jDatabaseMetaData
     }
 
     @Override
-    public boolean supportsTransactionIsolationLevel(int i) throws SQLException
+    public boolean supportsTransactionIsolationLevel( int i ) throws SQLException
     {
         return false;
     }
@@ -745,237 +750,240 @@ public class Neo4jDatabaseMetaData
     }
 
     @Override
-    public ResultSet getProcedures(String s, String s1, String s2) throws SQLException
+    public ResultSet getProcedures( String s, String s1, String s2 ) throws SQLException
     {
-        return new ResultSetBuilder().newResultSet(connection);
+        return new ResultSetBuilder().newResultSet( connection );
     }
 
     @Override
-    public ResultSet getProcedureColumns(String s, String s1, String s2, String s3) throws SQLException
+    public ResultSet getProcedureColumns( String s, String s1, String s2, String s3 ) throws SQLException
     {
-        return new ResultSetBuilder().newResultSet(connection);
+        return new ResultSetBuilder().newResultSet( connection );
     }
 
     @Override
-    public ResultSet getTables(String s, String s1, String s2, String[] strings) throws SQLException
+    public ResultSet getTables( String s, String s1, String s2, String[] strings ) throws SQLException
     {
-        ResultSet result = connection.executeQuery(connection.getDriver().getQueries().getTables());
+        ResultSet result = connection.executeQuery( connection.getDriver().getQueries().getTables() );
         ResultSetBuilder rs = new ResultSetBuilder();
-        rs.column("TABLE_CAT").
-                column("TABLE_SCHEM").
-                column("TABLE_NAME").
-                column("TABLE_TYPE").
-                column("REMARKS").
-                column("TYPE_CAT").
-                column("TYPE_SCHEM").
-                column("TYPE_NAME").
-                column("SELF_REFERENCING_COL_NAME").
-                column("REF_GENERATION");
+        rs.column( "TABLE_CAT" ).
+                column( "TABLE_SCHEM" ).
+                column( "TABLE_NAME" ).
+                column( "TABLE_TYPE" ).
+                column( "REMARKS" ).
+                column( "TYPE_CAT" ).
+                column( "TYPE_SCHEM" ).
+                column( "TYPE_NAME" ).
+                column( "SELF_REFERENCING_COL_NAME" ).
+                column( "REF_GENERATION" );
 
-        while (result.next())
+        while ( result.next() )
         {
-            final String type = result.getString("type.type");
-            System.out.println("type = " + type);
-            rs.row().cell("TABLE_CAT", "Default").cell("TABLE_SCHEM","Default").cell("TABLE_NAME", type).cell("TABLE_TYPE", "TABLE");
+            final String type = result.getString( "type.type" );
+            rs.row().cell( "TABLE_CAT", "Default" ).cell( "TABLE_SCHEM", "Default" ).cell( "TABLE_NAME",
+                    type ).cell( "TABLE_TYPE", "TABLE" );
         }
-        return rs.newResultSet(connection);
+        return rs.newResultSet( connection );
     }
 
     @Override
     public ResultSet getSchemas() throws SQLException
     {
         return new ResultSetBuilder().
-                column("TABLE_SCHEM").column("TABLE_CATALOG").
-                row("Default","Default").newResultSet(connection);
+                column( "TABLE_SCHEM" ).column( "TABLE_CATALOG" ).
+                row( "Default", "Default" ).newResultSet( connection );
     }
 
     @Override
     public ResultSet getCatalogs() throws SQLException
     {
-        return new ResultSetBuilder().column("TABLE_CAT").row("Default").newResultSet(connection);
+        return new ResultSetBuilder().column( "TABLE_CAT" ).row( "Default" ).newResultSet( connection );
     }
 
     @Override
     public ResultSet getTableTypes() throws SQLException
     {
         return new ResultSetBuilder().
-                column("TABLE_TYPE").
-                row("TABLE").newResultSet(connection);
+                column( "TABLE_TYPE" ).
+                row( "TABLE" ).newResultSet( connection );
     }
 
     @Override
-    public ResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
+    public ResultSet getColumns( String catalog, String schemaPattern, String tableNamePattern,
+                                 String columnNamePattern ) throws SQLException
     {
         ResultSetBuilder rs = new ResultSetBuilder();
-        rs.column("TABLE_CAT").
-                column("TABLE_SCHEM").
-                column("TABLE_NAME").
-                column("COLUMN_NAME").
-                column("DATA_TYPE", Types.INTEGER).
-                column("TYPE_NAME").
-                column("COLUMN_SIZE", Types.INTEGER).
-                column("BUFFER_LENGTH").
-                column("DECIMAL_DIGITS", Types.INTEGER).
-                column("NUM_PREC_RADIX").
-                column("NULLABLE").
-                column("REMARKS").
-                column("COLUMN_DEF").
-                column("SQL_DATA_TYPE").
-                column("SQL_DATETIME_SUB").
-                column("CHAR_OCTET_LENGTH").
-                column("ORDINAL_POSITION").
-                column("IS_NULLABLE").
-                column("SCOPE_CATALOG").
-                column("SCOPE_SCHEMA").
-                column("SCOPE_TABLE").
-                column("SOURCE_DATA_TYPE").
-                column("IS_AUTOINCREMENT");
+        rs.column( "TABLE_CAT" ).
+                column( "TABLE_SCHEM" ).
+                column( "TABLE_NAME" ).
+                column( "COLUMN_NAME" ).
+                column( "DATA_TYPE", Types.INTEGER ).
+                column( "TYPE_NAME" ).
+                column( "COLUMN_SIZE", Types.INTEGER ).
+                column( "BUFFER_LENGTH" ).
+                column( "DECIMAL_DIGITS", Types.INTEGER ).
+                column( "NUM_PREC_RADIX" ).
+                column( "NULLABLE" ).
+                column( "REMARKS" ).
+                column( "COLUMN_DEF" ).
+                column( "SQL_DATA_TYPE" ).
+                column( "SQL_DATETIME_SUB" ).
+                column( "CHAR_OCTET_LENGTH" ).
+                column( "ORDINAL_POSITION" ).
+                column( "IS_NULLABLE" ).
+                column( "SCOPE_CATALOG" ).
+                column( "SCOPE_SCHEMA" ).
+                column( "SCOPE_TABLE" ).
+                column( "SOURCE_DATA_TYPE" ).
+                column( "IS_AUTOINCREMENT" );
 
-        ResultSet result = connection.executeQuery(connection.getDriver().getQueries().getColumns(tableNamePattern));
-        while (result.next())
+        ResultSet result = connection.executeQuery( connection.getDriver().getQueries().getColumns( tableNamePattern
+        ) );
+        while ( result.next() )
         {
             rs.row().
-                    cell("TABLE_CAT", "Default").
-                    cell("TABLE_SCHEM", "Default").
-                    cell("TABLE_NAME", result.getString("type.type")).
-                    cell("COLUMN_NAME", result.getString("property.name")).
-                    cell("COLUMN_SIZE", 256).
-                    cell("DECIMAL_DIGITS", 256).
-                    cell("DATA_TYPE", Types.VARCHAR). // TODO
-                    cell("TYPE_NAME", "VARCHAR");
+                    cell( "TABLE_CAT", "Default" ).
+                    cell( "TABLE_SCHEM", "Default" ).
+                    cell( "TABLE_NAME", result.getString( "type.type" ) ).
+                    cell( "COLUMN_NAME", result.getString( "property.name" ) ).
+                    cell( "COLUMN_SIZE", 256 ).
+                    cell( "DECIMAL_DIGITS", 256 ).
+                    cell( "DATA_TYPE", Types.VARCHAR ). // TODO
+                    cell( "TYPE_NAME", "VARCHAR" );
         }
-        return connection.debug(rs.newResultSet(connection));
+        return connection.debug( rs.newResultSet( connection ) );
     }
 
     @Override
-    public ResultSet getColumnPrivileges(String s, String s1, String s2, String s3) throws SQLException
+    public ResultSet getColumnPrivileges( String s, String s1, String s2, String s3 ) throws SQLException
     {
-        return new ResultSetBuilder().newResultSet(connection);
+        return new ResultSetBuilder().newResultSet( connection );
     }
 
     @Override
-    public ResultSet getTablePrivileges(String s, String s1, String s2) throws SQLException
+    public ResultSet getTablePrivileges( String s, String s1, String s2 ) throws SQLException
     {
-        return new ResultSetBuilder().newResultSet(connection);
+        return new ResultSetBuilder().newResultSet( connection );
     }
 
     @Override
-    public ResultSet getBestRowIdentifier(String s, String s1, String s2, int i, boolean b) throws SQLException
+    public ResultSet getBestRowIdentifier( String s, String s1, String s2, int i, boolean b ) throws SQLException
     {
-        return new ResultSetBuilder().newResultSet(connection);
+        return new ResultSetBuilder().newResultSet( connection );
     }
 
     @Override
-    public ResultSet getVersionColumns(String s, String s1, String s2) throws SQLException
+    public ResultSet getVersionColumns( String s, String s1, String s2 ) throws SQLException
     {
-        return new ResultSetBuilder().newResultSet(connection);
+        return new ResultSetBuilder().newResultSet( connection );
     }
 
     @Override
-    public ResultSet getPrimaryKeys(String s, String s1, String s2) throws SQLException
+    public ResultSet getPrimaryKeys( String s, String s1, String s2 ) throws SQLException
     {
         return new ResultSetBuilder().
-                column("TABLE_CAT").
-                column("TABLE_SCHEM").
-                column("TABLE_NAME").
-                column("COLUMN_NAME").
-                column("KEY_SEQ", Types.SMALLINT).
-                column("PK_NAME").
-                newResultSet(connection);
+                column( "TABLE_CAT" ).
+                column( "TABLE_SCHEM" ).
+                column( "TABLE_NAME" ).
+                column( "COLUMN_NAME" ).
+                column( "KEY_SEQ", Types.SMALLINT ).
+                column( "PK_NAME" ).
+                newResultSet( connection );
     }
 
     @Override
-    public ResultSet getImportedKeys(String s, String s1, String s2) throws SQLException
+    public ResultSet getImportedKeys( String s, String s1, String s2 ) throws SQLException
     {
-        return new ResultSetBuilder().newResultSet(connection);
+        return new ResultSetBuilder().newResultSet( connection );
     }
 
     @Override
-    public ResultSet getExportedKeys(String s, String s1, String s2) throws SQLException
+    public ResultSet getExportedKeys( String s, String s1, String s2 ) throws SQLException
     {
-        return new ResultSetBuilder().newResultSet(connection);
+        return new ResultSetBuilder().newResultSet( connection );
     }
 
     @Override
-    public ResultSet getCrossReference(String s, String s1, String s2, String s3, String s4, String s5) throws SQLException
+    public ResultSet getCrossReference( String s, String s1, String s2, String s3, String s4,
+                                        String s5 ) throws SQLException
     {
-        return new ResultSetBuilder().newResultSet(connection);
+        return new ResultSetBuilder().newResultSet( connection );
     }
 
     @Override
     public ResultSet getTypeInfo() throws SQLException
     {
-        return new ResultSetBuilder().newResultSet(connection);
+        return new ResultSetBuilder().newResultSet( connection );
     }
 
     @Override
-    public ResultSet getIndexInfo(String s, String s1, String s2, boolean b, boolean b1) throws SQLException
+    public ResultSet getIndexInfo( String s, String s1, String s2, boolean b, boolean b1 ) throws SQLException
     {
-        return new ResultSetBuilder().newResultSet(connection);
+        return new ResultSetBuilder().newResultSet( connection );
     }
 
     @Override
-    public boolean supportsResultSetType(int i) throws SQLException
-    {
-        return true;
-    }
-
-    @Override
-    public boolean supportsResultSetConcurrency(int i, int i1) throws SQLException
+    public boolean supportsResultSetType( int i ) throws SQLException
     {
         return true;
     }
 
     @Override
-    public boolean ownUpdatesAreVisible(int i) throws SQLException
+    public boolean supportsResultSetConcurrency( int i, int i1 ) throws SQLException
     {
         return true;
     }
 
     @Override
-    public boolean ownDeletesAreVisible(int i) throws SQLException
+    public boolean ownUpdatesAreVisible( int i ) throws SQLException
     {
         return true;
     }
 
     @Override
-    public boolean ownInsertsAreVisible(int i) throws SQLException
+    public boolean ownDeletesAreVisible( int i ) throws SQLException
     {
         return true;
     }
 
     @Override
-    public boolean othersUpdatesAreVisible(int i) throws SQLException
+    public boolean ownInsertsAreVisible( int i ) throws SQLException
+    {
+        return true;
+    }
+
+    @Override
+    public boolean othersUpdatesAreVisible( int i ) throws SQLException
     {
         return false;
     }
 
     @Override
-    public boolean othersDeletesAreVisible(int i) throws SQLException
+    public boolean othersDeletesAreVisible( int i ) throws SQLException
     {
         return false;
     }
 
     @Override
-    public boolean othersInsertsAreVisible(int i) throws SQLException
+    public boolean othersInsertsAreVisible( int i ) throws SQLException
     {
         return false;
     }
 
     @Override
-    public boolean updatesAreDetected(int i) throws SQLException
+    public boolean updatesAreDetected( int i ) throws SQLException
     {
         return false;
     }
 
     @Override
-    public boolean deletesAreDetected(int i) throws SQLException
+    public boolean deletesAreDetected( int i ) throws SQLException
     {
         return false;
     }
 
     @Override
-    public boolean insertsAreDetected(int i) throws SQLException
+    public boolean insertsAreDetected( int i ) throws SQLException
     {
         return false;
     }
@@ -987,9 +995,9 @@ public class Neo4jDatabaseMetaData
     }
 
     @Override
-    public ResultSet getUDTs(String s, String s1, String s2, int[] ints) throws SQLException
+    public ResultSet getUDTs( String s, String s1, String s2, int[] ints ) throws SQLException
     {
-        return new ResultSetBuilder().newResultSet(connection);
+        return new ResultSetBuilder().newResultSet( connection );
     }
 
     @Override
@@ -1023,25 +1031,25 @@ public class Neo4jDatabaseMetaData
     }
 
     @Override
-    public ResultSet getSuperTypes(String s, String s1, String s2) throws SQLException
+    public ResultSet getSuperTypes( String s, String s1, String s2 ) throws SQLException
     {
         return null;
     }
 
     @Override
-    public ResultSet getSuperTables(String s, String s1, String s2) throws SQLException
+    public ResultSet getSuperTables( String s, String s1, String s2 ) throws SQLException
     {
         return null;
     }
 
     @Override
-    public ResultSet getAttributes(String s, String s1, String s2, String s3) throws SQLException
+    public ResultSet getAttributes( String s, String s1, String s2, String s3 ) throws SQLException
     {
         return null;
     }
 
     @Override
-    public boolean supportsResultSetHoldability(int i) throws SQLException
+    public boolean supportsResultSetHoldability( int i ) throws SQLException
     {
         return false;
     }
@@ -1101,12 +1109,12 @@ public class Neo4jDatabaseMetaData
     }
 
     @Override
-    public ResultSet getSchemas(String s, String s1) throws SQLException
+    public ResultSet getSchemas( String s, String s1 ) throws SQLException
     {
         return new ResultSetBuilder().
-                column("TABLE_SCHEM").column("TABLE_CATALOG").
-                row().cell("TABLE_SCHEM", "Default").cell("TABLE_CATALOG", "Default").
-                newResultSet(connection);
+                column( "TABLE_SCHEM" ).column( "TABLE_CATALOG" ).
+                row().cell( "TABLE_SCHEM", "Default" ).cell( "TABLE_CATALOG", "Default" ).
+                newResultSet( connection );
     }
 
     @Override
@@ -1124,38 +1132,40 @@ public class Neo4jDatabaseMetaData
     @Override
     public ResultSet getClientInfoProperties() throws SQLException
     {
-        return new ResultSetBuilder().newResultSet(connection);
+        return new ResultSetBuilder().newResultSet( connection );
     }
 
     @Override
-    public ResultSet getFunctions(String s, String s1, String s2) throws SQLException
+    public ResultSet getFunctions( String s, String s1, String s2 ) throws SQLException
     {
-        return new ResultSetBuilder().newResultSet(connection);
+        return new ResultSetBuilder().newResultSet( connection );
     }
 
     @Override
-    public ResultSet getFunctionColumns(String s, String s1, String s2, String s3) throws SQLException
+    public ResultSet getFunctionColumns( String s, String s1, String s2, String s3 ) throws SQLException
     {
-        return new ResultSetBuilder().newResultSet(connection);
+        return new ResultSetBuilder().newResultSet( connection );
     }
 
     @Override
-    public <T> T unwrap(Class<T> tClass) throws SQLException
+    public <T> T unwrap( Class<T> tClass ) throws SQLException
     {
         return (T) this;
     }
 
     @Override
-    public boolean isWrapperFor(Class<?> aClass) throws SQLException
+    public boolean isWrapperFor( Class<?> aClass ) throws SQLException
     {
         return false;
     }
 
-    public ResultSet getPseudoColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
+    public ResultSet getPseudoColumns( String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern ) throws SQLException
+    {
         return null;
     }
 
-    public boolean generatedKeyAlwaysReturned() throws SQLException {
+    public boolean generatedKeyAlwaysReturned() throws SQLException
+    {
         return false;
     }
 }

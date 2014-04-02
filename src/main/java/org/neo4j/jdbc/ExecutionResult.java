@@ -25,17 +25,20 @@ import org.neo4j.jdbc.util.Closer;
 import java.io.Closeable;
 import java.util.*;
 
+import org.neo4j.helpers.collection.ClosableIterator;
+
 /**
  * Cypher execution result.
  */
 public class ExecutionResult implements Iterable<Object[]>, Closeable
 {
-    public static final ExecutionResult EMPTY_RESULT = new ExecutionResult(Collections.<String>emptyList(), Collections.<Object[]>emptyList().iterator());
+    public static final ExecutionResult EMPTY_RESULT = new ExecutionResult( Collections.<String>emptyList(),
+            Collections.<Object[]>emptyList().iterator() );
     private List<String> columns;
     private Iterator<Object[]> result;
     private final boolean isLazy;
 
-    public ExecutionResult(List<String> columns, Iterator<Object[]> result)
+    public ExecutionResult( List<String> columns, Iterator<Object[]> result )
     {
         this.columns = columns;
         this.result = result;
@@ -47,9 +50,11 @@ public class ExecutionResult implements Iterable<Object[]>, Closeable
         return columns;
     }
 
-    public boolean isLazy() {
+    public boolean isLazy()
+    {
         return isLazy;
     }
+
     @Override
     public Iterator<Object[]> iterator()
     {
@@ -59,12 +64,13 @@ public class ExecutionResult implements Iterable<Object[]>, Closeable
     @Override
     public String toString()
     {
-        String result = "Columns:"+columns;
-        result+="\n"+this.result;
+        String result = "Columns:" + columns;
+        result += "\n" + this.result;
         return result;
     }
 
-    public Iterator<Object[]> getResult() {
+    public Iterator<Object[]> getResult()
+    {
         return result;
     }
 

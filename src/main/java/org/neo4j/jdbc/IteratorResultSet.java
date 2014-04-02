@@ -20,12 +20,15 @@
 
 package org.neo4j.jdbc;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import org.neo4j.jdbc.util.ClosableIterator;
 
-import java.sql.*;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+
+import org.neo4j.helpers.collection.ClosableIterator;
 
 /**
  * ResultSet implementation that is backed by an Iterator.
@@ -36,33 +39,36 @@ public class IteratorResultSet extends AbstractResultSet
     private Object[] currentRow;
     private int row = -1;
 
-    public IteratorResultSet(List<Neo4jColumnMetaData> columns, Iterator<Object[]> data,Neo4jConnection conn)
+    public IteratorResultSet( List<Neo4jColumnMetaData> columns, Iterator<Object[]> data, Neo4jConnection conn )
     {
-        super(columns,conn);
+        super( columns, conn );
         this.data = data;
         data.hasNext();
     }
-    public IteratorResultSet(Neo4jConnection conn, List<String> columns, Iterator<Object[]> data)
+
+    public IteratorResultSet( Neo4jConnection conn, List<String> columns, Iterator<Object[]> data )
     {
-        super(conn,columns);
+        super( conn, columns );
         this.data = data;
         data.hasNext();
     }
 
     @Override
-    protected Object[] currentRow() {
+    protected Object[] currentRow()
+    {
         return currentRow;
     }
 
     @Override
     public boolean next() throws SQLException
     {
-        if (hasNext())
+        if ( hasNext() )
         {
             currentRow = data.next();
-            row ++;
+            row++;
             return true;
-        } else
+        }
+        else
         {
             return false;
         }
@@ -71,19 +77,26 @@ public class IteratorResultSet extends AbstractResultSet
     @Override
     public void close() throws SQLException
     {
-        if (data instanceof AutoCloseable) {
-            try {
+        if ( data instanceof AutoCloseable )
+        {
+            try
+            {
                 ((AutoCloseable) data).close();
-            } catch (Exception e) {
-                log.warn("Couldn't close resultset",e);
             }
-        } else if (data instanceof ClosableIterator) {
-            ((ClosableIterator)data).close();
+            catch ( Exception e )
+            {
+                log.warn( "Couldn't close resultset", e );
+            }
+        }
+        else if ( data instanceof ClosableIterator )
+        {
+            ((ClosableIterator) data).close();
         }
         super.close();
     }
 
-    private boolean hasNext() {
+    private boolean hasNext()
+    {
         return data.hasNext();
     }
 
@@ -114,25 +127,25 @@ public class IteratorResultSet extends AbstractResultSet
     @Override
     public void beforeFirst() throws SQLException
     {
-        throw new SQLException("Result set type is TYPE_FORWARD_ONLY");
+        throw new SQLException( "Result set type is TYPE_FORWARD_ONLY" );
     }
 
     @Override
     public void afterLast() throws SQLException
     {
-        throw new SQLException("Result set type is TYPE_FORWARD_ONLY");
+        throw new SQLException( "Result set type is TYPE_FORWARD_ONLY" );
     }
 
     @Override
     public boolean first() throws SQLException
     {
-        throw new SQLException("Result set type is TYPE_FORWARD_ONLY");
+        throw new SQLException( "Result set type is TYPE_FORWARD_ONLY" );
     }
 
     @Override
     public boolean last() throws SQLException
     {
-        throw new SQLException("Result set type is TYPE_FORWARD_ONLY");
+        throw new SQLException( "Result set type is TYPE_FORWARD_ONLY" );
     }
 
     @Override
@@ -142,28 +155,30 @@ public class IteratorResultSet extends AbstractResultSet
     }
 
     @Override
-    public boolean absolute(int i) throws SQLException
+    public boolean absolute( int i ) throws SQLException
     {
-        throw new SQLException("Result set type is TYPE_FORWARD_ONLY");
+        throw new SQLException( "Result set type is TYPE_FORWARD_ONLY" );
     }
 
     @Override
-    public boolean relative(int i) throws SQLException
+    public boolean relative( int i ) throws SQLException
     {
-        throw new SQLException("Result set type is TYPE_FORWARD_ONLY");
+        throw new SQLException( "Result set type is TYPE_FORWARD_ONLY" );
     }
 
     @Override
     public boolean previous() throws SQLException
     {
-        throw new SQLException("Result set type is TYPE_FORWARD_ONLY");
+        throw new SQLException( "Result set type is TYPE_FORWARD_ONLY" );
     }
 
     @Override
-    public void setFetchDirection(int i) throws SQLException
+    public void setFetchDirection( int i ) throws SQLException
     {
-        if (i != ResultSet.FETCH_FORWARD)
-            throw new SQLException("Result set type is TYPE_FORWARD_ONLY");
+        if ( i != ResultSet.FETCH_FORWARD )
+        {
+            throw new SQLException( "Result set type is TYPE_FORWARD_ONLY" );
+        }
     }
 
     @Override
@@ -173,7 +188,7 @@ public class IteratorResultSet extends AbstractResultSet
     }
 
     @Override
-    public void setFetchSize(int i) throws SQLException
+    public void setFetchSize( int i ) throws SQLException
     {
     }
 
@@ -198,7 +213,7 @@ public class IteratorResultSet extends AbstractResultSet
     @Override
     public String toString()
     {
-        return super.toString() +" current row "+row+": "+ Arrays.toString(currentRow);
+        return super.toString() + " current row " + row + ": " + Arrays.toString( currentRow );
     }
 
 }

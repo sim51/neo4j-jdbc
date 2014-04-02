@@ -20,7 +20,6 @@
 
 package org.neo4j.jdbc;
 
-import javax.swing.*;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationHandler;
@@ -33,57 +32,64 @@ import java.util.logging.Logger;
  * This implements driver debugging functionality. Method calls and results are logged to JUL.
  */
 public class CallProxy
-    implements InvocationHandler
+        implements InvocationHandler
 {
-    public static <T> T proxy(Class<T> clazz, T next)
+    public static <T> T proxy( Class<T> clazz, T next )
     {
-        return clazz.cast(Proxy.newProxyInstance(clazz.getClassLoader(), new Class[]{clazz}, new CallProxy(next)));
+        return clazz.cast( Proxy.newProxyInstance( clazz.getClassLoader(), new Class[]{clazz},
+                new CallProxy( next ) ) );
     }
 
-    private static void log(final String str)
+    private static void log( final String str )
     {
-        Logger.getLogger(Driver.class.getName()).info(str);
+        Logger.getLogger( Driver.class.getName() ).info( str );
     }
 
     private Object next;
 
-    public CallProxy(Object next)
+    public CallProxy( Object next )
     {
         this.next = next;
     }
 
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
+    public Object invoke( Object proxy, Method method, Object[] args ) throws Throwable
     {
-        if (!method.getDeclaringClass().equals(Object.class))
+        if ( !method.getDeclaringClass().equals( Object.class ) )
         {
-            String call = method.getDeclaringClass().getSimpleName()+"."+method.getName()+"(";
-            if (args != null)
+            String call = method.getDeclaringClass().getSimpleName() + "." + method.getName() + "(";
+            if ( args != null )
             {
                 String comma = "";
-                for (Object arg : args)
+                for ( Object arg : args )
                 {
-                    call+= comma + (arg == null ? "null": arg.toString());
+                    call += comma + (arg == null ? "null" : arg.toString());
                     comma = ", ";
                 }
             }
-            call+=")";
+            call += ")";
 
-            log(call);
+            log( call );
             try
             {
-                final Object result = method.invoke(next, args);
-                if (!method.getReturnType().equals(Void.TYPE))
-                    log("->"+result+"\n");
+                final Object result = method.invoke( next, args );
+                if ( !method.getReturnType().equals( Void.TYPE ) )
+                {
+                    log( "->" + result + "\n" );
+                }
                 return result;
-            } catch (InvocationTargetException e)
+            }
+            catch ( InvocationTargetException e )
             {
                 StringWriter str = new StringWriter();
-                PrintWriter print = new PrintWriter(str, true);
-                e.printStackTrace(print);
+                PrintWriter print = new PrintWriter( str, true );
+                e.printStackTrace( print );
                 throw e.getTargetException();
             }
-        } else
-            return method.invoke(next, args);
+        }
+        else
+        {
+            return method.invoke( next, args );
+        }
     }
 }

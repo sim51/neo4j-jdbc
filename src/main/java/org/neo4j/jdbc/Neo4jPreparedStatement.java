@@ -31,47 +31,51 @@ import java.util.Map;
  * Implementation of PreparedStatement. Parameters in Cypher queries have to be done as {nr}, as calls to methods
  * here will be saved in a parameter map with "nr"->value, since JDBC does not support named parameters.
  */
-public class Neo4jPreparedStatement extends AbstractPreparedStatement 
+public class Neo4jPreparedStatement extends AbstractPreparedStatement
 {
     private String query;
     private Map<String, Object> parameters = new HashMap<String, Object>();
 
-    public Neo4jPreparedStatement(Neo4jConnection connection, String query)
+    public Neo4jPreparedStatement( Neo4jConnection connection, String query )
     {
-        super(connection);
+        super( connection );
         this.query = query;
     }
 
     @Override
     public ResultSet executeQuery() throws SQLException
     {
-        resultSet = connection.executeQuery(query, parameters);
+        resultSet = connection.executeQuery( query, parameters );
         return resultSet;
     }
 
     @Override
     public boolean execute() throws SQLException
     {
-        resultSet = connection.executeQuery(query, parameters);
+        resultSet = connection.executeQuery( query, parameters );
         return true;
     }
 
     @Override
     public int executeUpdate() throws SQLException
     {
-        resultSet = connection.executeQuery(query, parameters);
-        while (resultSet.next());
+        resultSet = connection.executeQuery( query, parameters );
+        while ( resultSet.next() )
+        {
+            ;
+        }
         return 0; // todo
     }
 
-    private void add(int parameterIndex, Object value) {
-        parameters.put(Integer.toString(parameterIndex), value);
+    private void add( int parameterIndex, Object value )
+    {
+        parameters.put( Integer.toString( parameterIndex ), value );
     }
 
     @Override
     public ResultSetMetaData getMetaData() throws SQLException
     {
-        if (resultSet == null)
+        if ( resultSet == null )
         {
             execute();
         }
@@ -80,71 +84,71 @@ public class Neo4jPreparedStatement extends AbstractPreparedStatement
     }
 
     @Override
-    public void setNull(int parameterIndex, int sqlType) throws SQLException
+    public void setNull( int parameterIndex, int sqlType ) throws SQLException
     {
-        add(parameterIndex,null);
+        add( parameterIndex, null );
         // todo is that the correct behaviour for cypher ?
         // parameters.remove(Integer.toString(parameterIndex));
     }
 
     @Override
-    public void setBoolean(int parameterIndex, boolean value) throws SQLException
+    public void setBoolean( int parameterIndex, boolean value ) throws SQLException
     {
-        add(parameterIndex, value);
+        add( parameterIndex, value );
     }
 
     @Override
-    public void setByte(int parameterIndex, byte value) throws SQLException
+    public void setByte( int parameterIndex, byte value ) throws SQLException
     {
-        add(parameterIndex, value);
+        add( parameterIndex, value );
     }
 
     @Override
-    public void setShort(int parameterIndex, short value) throws SQLException
+    public void setShort( int parameterIndex, short value ) throws SQLException
     {
-        add(parameterIndex, value);
+        add( parameterIndex, value );
     }
 
     @Override
-    public void setInt(int parameterIndex, int value) throws SQLException
+    public void setInt( int parameterIndex, int value ) throws SQLException
     {
-        add(parameterIndex, value);
+        add( parameterIndex, value );
     }
 
     @Override
-    public void setLong(int parameterIndex, long value) throws SQLException
+    public void setLong( int parameterIndex, long value ) throws SQLException
     {
-        add(parameterIndex, value);
+        add( parameterIndex, value );
     }
 
     @Override
-    public void setFloat(int parameterIndex, float value) throws SQLException
+    public void setFloat( int parameterIndex, float value ) throws SQLException
     {
-        add(parameterIndex, value);
+        add( parameterIndex, value );
     }
 
     @Override
-    public void setDouble(int parameterIndex, double value) throws SQLException
+    public void setDouble( int parameterIndex, double value ) throws SQLException
     {
-        add(parameterIndex, value);
+        add( parameterIndex, value );
     }
 
     @Override
-    public void setBigDecimal(int parameterIndex, BigDecimal value) throws SQLException
+    public void setBigDecimal( int parameterIndex, BigDecimal value ) throws SQLException
     {
-        add(parameterIndex, value);
+        add( parameterIndex, value );
     }
 
     @Override
-    public void setString(int parameterIndex, String value) throws SQLException
+    public void setString( int parameterIndex, String value ) throws SQLException
     {
-        add(parameterIndex, value);
+        add( parameterIndex, value );
     }
 
     @Override
-    public void setBytes(int parameterIndex, byte[] value) throws SQLException
+    public void setBytes( int parameterIndex, byte[] value ) throws SQLException
     {
-        add(parameterIndex,value);
+        add( parameterIndex, value );
     }
 
     @Override
@@ -154,27 +158,27 @@ public class Neo4jPreparedStatement extends AbstractPreparedStatement
     }
 
     @Override
-    public void setObject(int parameterIndex, Object value, int targetSqlType) throws SQLException
+    public void setObject( int parameterIndex, Object value, int targetSqlType ) throws SQLException
     {
-        add(parameterIndex, value);
+        add( parameterIndex, value );
     }
 
     @Override
-    public void setObject(int parameterIndex, Object value) throws SQLException
+    public void setObject( int parameterIndex, Object value ) throws SQLException
     {
-        add(parameterIndex, value);
+        add( parameterIndex, value );
     }
 
     @Override
-    public void setNull(int parameterIndex, int sqlType, String typeName) throws SQLException
+    public void setNull( int parameterIndex, int sqlType, String typeName ) throws SQLException
     {
-        add(parameterIndex,null);
+        add( parameterIndex, null );
         // parameters.remove(Integer.toString(parameterIndex));
     }
 
     @Override
-    public void setObject(int parameterIndex, Object value, int targetSqlType, int scaleOrLength) throws SQLException
+    public void setObject( int parameterIndex, Object value, int targetSqlType, int scaleOrLength ) throws SQLException
     {
-        add(parameterIndex,value);
+        add( parameterIndex, value );
     }
 }

@@ -20,34 +20,35 @@
 
 package org.neo4j.jdbc;
 
-import org.junit.Test;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.junit.Test;
+
 public class Neo4jDatabaseLockingDataTest extends Neo4jJdbcTest
 {
 
-    public Neo4jDatabaseLockingDataTest(Mode mode) throws SQLException {
-        super(mode);
+    public Neo4jDatabaseLockingDataTest( Mode mode ) throws SQLException
+    {
+        super( mode );
     }
 
     @Test
     public void testTryLock() throws SQLException
     {
         createNode();
-        for(int i=0; i< 15; i++) {
+        for ( int i = 0; i < 15; i++ )
+        {
             Statement stmt1 = conn.createStatement();
-            ResultSet rs1 = stmt1.executeQuery("MATCH (n:Root {name:'root'}) RETURN n");
-            if (rs1.next()) {
-                Object value = rs1.getObject("n");
-                System.out.println(i+". value = " + value);
+            ResultSet rs1 = stmt1.executeQuery( "MATCH (n:Root {name:'root'}) RETURN n" );
+            if ( rs1.next() )
+            {
+                Object value = rs1.getObject( "n" );
+                System.out.println( i + ". value = " + value );
             }
-            rs1.close(); stmt1.close();
+            rs1.close();
+            stmt1.close();
         }
     }
 }

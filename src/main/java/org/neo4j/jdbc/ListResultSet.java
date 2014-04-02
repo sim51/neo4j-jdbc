@@ -20,22 +20,22 @@
 
 package org.neo4j.jdbc;
 
-import java.sql.*;
-import java.util.Arrays;
+import java.sql.SQLException;
 import java.util.List;
 
 /**
  * ResultSet implementation that is backed by Lists.
  */
-public class ListResultSet extends AbstractResultSet {
+public class ListResultSet extends AbstractResultSet
+{
     private static final int BEFORE_FIRST = -1;
     private int current = -1;
     private List<List<Object>> data;
     private final int rows;
 
-    public ListResultSet(List<Neo4jColumnMetaData> columns, List<List<Object>> data, Neo4jConnection conn)
+    public ListResultSet( List<Neo4jColumnMetaData> columns, List<List<Object>> data, Neo4jConnection conn )
     {
-        super(columns, conn);
+        super( columns, conn );
         this.data = data;
         rows = this.data.size();
     }
@@ -50,8 +50,9 @@ public class ListResultSet extends AbstractResultSet {
     }
 
     @Override
-    protected Object[] currentRow() {
-        return data.get(current).toArray();
+    protected Object[] currentRow()
+    {
+        return data.get( current ).toArray();
     }
 
     @Override
@@ -75,7 +76,7 @@ public class ListResultSet extends AbstractResultSet {
     @Override
     public boolean isLast() throws SQLException
     {
-        return current == rows-1;
+        return current == rows - 1;
     }
 
     @Override
@@ -93,14 +94,14 @@ public class ListResultSet extends AbstractResultSet {
     @Override
     public boolean first() throws SQLException
     {
-        current=0;
+        current = 0;
         return true;
     }
 
     @Override
     public boolean last() throws SQLException
     {
-        current = rows-1;
+        current = rows - 1;
         return true;
     }
 
@@ -111,20 +112,25 @@ public class ListResultSet extends AbstractResultSet {
     }
 
     @Override
-    public boolean absolute(int i) throws SQLException
+    public boolean absolute( int i ) throws SQLException
     {
-        if (i > 0)
+        if ( i > 0 )
+        {
             current = i - 1;
+        }
         else
-            current = rows -i;
+        {
+            current = rows - i;
+        }
 
         return false;
     }
 
     @Override
-    public boolean relative(int i) throws SQLException
+    public boolean relative( int i ) throws SQLException
     {
-        if (current + i >= 0 &&  current + i < rows) {
+        if ( current + i >= 0 && current + i < rows )
+        {
             current += i;
             return true;
         }
@@ -134,16 +140,16 @@ public class ListResultSet extends AbstractResultSet {
     @Override
     public boolean previous() throws SQLException
     {
-        return relative(-1);
+        return relative( -1 );
     }
 
     @Override
     public String toString()
     {
         String result = super.toString();
-        for (List<Object> row : data)
+        for ( List<Object> row : data )
         {
-            result+="\n"+ row;
+            result += "\n" + row;
         }
         return result;
     }

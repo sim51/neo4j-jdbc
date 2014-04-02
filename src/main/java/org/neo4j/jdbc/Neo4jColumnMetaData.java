@@ -21,15 +21,15 @@
 package org.neo4j.jdbc;
 
 /**
-* TODO
-*/
+ * TODO
+ */
 public class Neo4jColumnMetaData
 {
     private String name;
     private String typeName;
     private int dataType;
 
-    public Neo4jColumnMetaData(String name, String typeName, int dataType)
+    public Neo4jColumnMetaData( String name, String typeName, int dataType )
     {
         this.name = name;
         this.typeName = typeName;
@@ -53,6 +53,6 @@ public class Neo4jColumnMetaData
 
     public String toString()
     {
-        return name+":"+ typeName;
+        return name + ":" + typeName;
     }
 }

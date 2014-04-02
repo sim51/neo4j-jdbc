@@ -20,12 +20,6 @@
 
 package org.neo4j.jdbc.ext;
 
-import org.neo4j.cypherdsl.grammar.ExecuteWithParameters;
-import org.neo4j.jdbc.Driver;
-import org.neo4j.jdbc.Neo4jConnection;
-import org.neo4j.jdbc.ResultSetBuilder;
-import org.restlet.Client;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,59 +28,69 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.neo4j.cypherdsl.grammar.ExecuteWithParameters;
+import org.neo4j.jdbc.Driver;
+import org.neo4j.jdbc.Neo4jConnection;
+import org.neo4j.jdbc.ResultSetBuilder;
+
 /**
  * LibreOffice specific Neo4j connection. Contains workarounds to get it to work with LibreOffice.
  */
 public class LibreOfficeConnection
-    extends Neo4jConnection
-    implements Connection
+        extends Neo4jConnection
+        implements Connection
 {
-    public LibreOfficeConnection(Driver driver, String url, Properties properties) throws SQLException
+    public LibreOfficeConnection( Driver driver, String url, Properties properties ) throws SQLException
     {
-        super(driver, url, properties);
+        super( driver, url, properties );
     }
 
     @Override
-    public ResultSet executeQuery(String query, Map<String, Object> parameters) throws SQLException
+    public ResultSet executeQuery( String query, Map<String, Object> parameters ) throws SQLException
     {
         {
-            Pattern pattern = Pattern.compile("SELECT \\* FROM \"(\\w*)\" WHERE \\( 0 = 1 \\)");
-            Matcher matcher = pattern.matcher(query);
-            if (matcher.matches())
+            Pattern pattern = Pattern.compile( "SELECT \\* FROM \"(\\w*)\" WHERE \\( 0 = 1 \\)" );
+            Matcher matcher = pattern.matcher( query );
+            if ( matcher.matches() )
             {
-                String table = matcher.group(1);
-                ExecuteWithParameters ewp = getDriver().getQueries().getData(table, returnProperties(table, "instance"));
-                return executeQuery(ewp);
+                String table = matcher.group( 1 );
+                ExecuteWithParameters ewp = getDriver().getQueries().getData( table, returnProperties( table,
+                        "instance" ) );
+                return executeQuery( ewp );
             }
         }
 
         {
-            Pattern pattern = Pattern.compile("SELECT \\* FROM \"(\\w*)\" WHERE 0 = 1");
-            Matcher matcher = pattern.matcher(query);
-            if (matcher.matches())
+            Pattern pattern = Pattern.compile( "SELECT \\* FROM \"(\\w*)\" WHERE 0 = 1" );
+            Matcher matcher = pattern.matcher( query );
+            if ( matcher.matches() )
             {
-                String table = matcher.group(1);
-                ExecuteWithParameters ewp = getDriver().getQueries().getData(table, returnProperties(table, "instance"));
-                return executeQuery(ewp);
+                String table = matcher.group( 1 );
+                ExecuteWithParameters ewp = getDriver().getQueries().getData( table, returnProperties( table,
+                        "instance" ) );
+                return executeQuery( ewp );
             }
         }
 
         {
-            Pattern pattern = Pattern.compile("SELECT \\* FROM \"(\\w*)\"");
-            Matcher matcher = pattern.matcher(query);
-            if (matcher.matches())
+            Pattern pattern = Pattern.compile( "SELECT \\* FROM \"(\\w*)\"" );
+            Matcher matcher = pattern.matcher( query );
+            if ( matcher.matches() )
             {
-                String table = matcher.group(1);
-                ExecuteWithParameters ewp = getDriver().getQueries().getData(table, returnProperties(table, "instance"));
-                return executeQuery(ewp);
+                String table = matcher.group( 1 );
+                ExecuteWithParameters ewp = getDriver().getQueries().getData( table, returnProperties( table,
+                        "instance" ) );
+                return executeQuery( ewp );
             }
         }
 
         {
-            if (query.equals(" WHERE  ( 0 = 1 ) "))
-                        return new ResultSetBuilder().newResultSet(debug(this));
+            if ( query.equals( " WHERE  ( 0 = 1 ) " ) )
+            {
+                return new ResultSetBuilder().newResultSet( debug( this ) );
+            }
         }
 
-        return super.executeQuery(query, parameters);
+        return super.executeQuery( query, parameters );
     }
 }

@@ -24,7 +24,10 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Helper to build ResultSets using a fluent DSL approach.
@@ -37,61 +40,71 @@ public class ResultSetBuilder
 
     private List<Object> currentRow = new ArrayList<Object>();
 
-    public ResultSetBuilder column(String name, int type)
+    public ResultSetBuilder column( String name, int type )
     {
         String typeName = null;
-        if (type == Types.VARCHAR)
+        if ( type == Types.VARCHAR )
+        {
             typeName = String.class.getName();
-        else if (type == Types.INTEGER)
+        }
+        else if ( type == Types.INTEGER )
+        {
             typeName = Integer.class.getName();
-        
-        columns.add(new Neo4jColumnMetaData(name, typeName, type));
+        }
+
+        columns.add( new Neo4jColumnMetaData( name, typeName, type ) );
         return this;
     }
 
-    public ResultSetBuilder column(String name)
+    public ResultSetBuilder column( String name )
     {
-        return column(name, Types.VARCHAR);
+        return column( name, Types.VARCHAR );
     }
 
-    public ResultSetBuilder rowData(Collection<Object> values)
+    public ResultSetBuilder rowData( Collection<Object> values )
     {
         currentRow = new ArrayList<Object>();
-        currentRow.addAll(values);
+        currentRow.addAll( values );
 
-        for (int i = currentRow.size(); i < columns.size(); i++)
-            currentRow.add(null);
-
-        data.add(currentRow);
-        return this;
-    }
-
-    public ResultSetBuilder row(Object... values)
-    {
-        return rowData(Arrays.asList(values));
-    }
-
-    public ResultSetBuilder cell(String name, Object value)
-    {
-        int i = getColumnIndex(name);
-        if (i == -1)
-            throw new IllegalArgumentException("No such column declared:"+name);
-        currentRow.set(i, value);
-        return this;
-    }
-
-    public ResultSet newResultSet(Connection connection) throws SQLException
-    {
-        return new ListResultSet(columns, data, connection.unwrap(Neo4jConnection.class));
-    }
-
-    private int getColumnIndex(String name)
-    {
-        for (int i = 0; i < columns.size(); i++)
+        for ( int i = currentRow.size(); i < columns.size(); i++ )
         {
-            Neo4jColumnMetaData columnMetaData = columns.get(i);
-            if (columnMetaData.getName().equals(name))
+            currentRow.add( null );
+        }
+
+        data.add( currentRow );
+        return this;
+    }
+
+    public ResultSetBuilder row( Object... values )
+    {
+        return rowData( Arrays.asList( values ) );
+    }
+
+    public ResultSetBuilder cell( String name, Object value )
+    {
+        int i = getColumnIndex( name );
+        if ( i == -1 )
+        {
+            throw new IllegalArgumentException( "No such column declared:" + name );
+        }
+        currentRow.set( i, value );
+        return this;
+    }
+
+    public ResultSet newResultSet( Connection connection ) throws SQLException
+    {
+        return new ListResultSet( columns, data, connection.unwrap( Neo4jConnection.class ) );
+    }
+
+    private int getColumnIndex( String name )
+    {
+        for ( int i = 0; i < columns.size(); i++ )
+        {
+            Neo4jColumnMetaData columnMetaData = columns.get( i );
+            if ( columnMetaData.getName().equals( name ) )
+            {
                 return i;
+            }
         }
         return -1;
     }
