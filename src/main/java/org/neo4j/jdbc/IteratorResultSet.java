@@ -22,13 +22,11 @@ package org.neo4j.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import org.neo4j.jdbc.util.ClosableIterator;
-
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.neo4j.helpers.collection.ClosableIterator;
+import org.neo4j.jdbc.util.ClosableIterator;
 
 /**
  * ResultSet implementation that is backed by an Iterator.
