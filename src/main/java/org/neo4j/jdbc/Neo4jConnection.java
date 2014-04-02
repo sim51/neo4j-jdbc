@@ -28,6 +28,7 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,9 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.restlet.Client;
+import org.restlet.Context;
+import org.restlet.data.Protocol;
 
 import org.neo4j.cypherdsl.CypherQuery;
 import org.neo4j.cypherdsl.expression.Expression;
@@ -84,33 +88,45 @@ public class Neo4jConnection extends AbstractConnection
             if (!(connectionUrl.startsWith( "http://" ) || connectionUrl.startsWith( "https://" )))
                 remoteUrl = "http"+remoteUrl; // Default to HTTP if not specified
 
-            final Resources.DiscoveryClientResource discovery = getDiscoveryResource( remoteUrl, user, password );
-            if ( !properties.containsKey( Driver.LEGACY ) && discovery.getTransactionPath() != null )
+            if ( log.isDebugEnabled() )
             {
-                return new TransactionalQueryExecutor( remoteUrl, user, password );
+                log.debug( "Connecting to URL " + url );
             }
-            if ( discovery.getCypherPath() != null )
+
+            Client client = new Client( new Context(), Arrays.asList( Protocol.valueOf(remoteUrl.split( ":" )[0]) ), properties.getProperty( "restlet.helperclass" ) );
+
+            Resources resources = new Resources( remoteUrl, client );
+
+            if ( user != null && password != null )
             {
-                return new RestQueryExecutor( remoteUrl, user, password );
+                resources.setAuth( user, password );
             }
-            throw new SQLException( "Could not connect to the Neo4j Server at " + remoteUrl + " " + discovery
-                    .getVersion() );
+
+            try
+            {
+                Resources.DiscoveryClientResource discovery = resources.getDiscoveryResource();
+
+                if ( !properties.containsKey( Driver.LEGACY ) && discovery.getTransactionPath() != null )
+                {
+                    return new TransactionalQueryExecutor( resources );
+                }
+                else if ( discovery.getCypherPath() != null )
+                {
+                    url = connectionUrl;
+
+                    return new RestQueryExecutor( resources );
+                }
+
+                throw new SQLException( "Could not connect to the Neo4j Server at " + remoteUrl + " " + discovery
+                        .getVersion() );
+            }
+            catch ( IOException e )
+            {
+                throw new SQLException( "Error connecting to Neo4j Server at " + connectionUrl, e );
+            }
         }
 
         return getDriver().createExecutor( connectionUrl, properties );
-    }
-
-    private Resources.DiscoveryClientResource getDiscoveryResource( String connectionUrl, String user,
-                                                                    String password ) throws SQLException
-    {
-        try
-        {
-            return Resources.getDiscoveryResource( connectionUrl, user, password );
-        }
-        catch ( IOException e )
-        {
-            throw new SQLException( "Error connecting to Neo4j Server at " + connectionUrl, e );
-        }
     }
 
     private String getPassword()

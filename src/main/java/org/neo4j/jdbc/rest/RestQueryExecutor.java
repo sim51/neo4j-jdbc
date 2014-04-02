@@ -30,28 +30,15 @@ public class RestQueryExecutor implements QueryExecutor
 {
     protected final static Log log = LogFactory.getLog( RestQueryExecutor.class );
 
-    private String url;
     private ClientResource cypherResource;
     private ObjectMapper mapper = new ObjectMapper();
     private Version version;
     private final Resources.DiscoveryClientResource discovery;
 
-    public RestQueryExecutor( String connectionUrl, String user, String password ) throws SQLException
+    public RestQueryExecutor( Resources resources ) throws SQLException
     {
         try
         {
-            url = connectionUrl;
-            if ( log.isDebugEnabled() )
-            {
-                log.debug( "Connecting to URL " + url );
-            }
-            Resources resources = new Resources( url );
-
-            if ( user != null && password != null )
-            {
-                resources.setAuth( user, password );
-            }
-
             discovery = resources.getDiscoveryResource();
 
             version = new Version( discovery.getVersion() );

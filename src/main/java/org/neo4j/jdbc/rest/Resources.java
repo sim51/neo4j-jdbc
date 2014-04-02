@@ -29,15 +29,16 @@ import org.restlet.util.Series;
  */
 public class Resources
 {
-    private final static Client client = new Client( "HTTP" );
+    private final Client client;
 
     private ObjectMapper mapper = new ObjectMapper();
     private final Reference ref;
     private String user;
     private String password;
 
-    Resources( String url )
+    public Resources( String url, Client client )
     {
+        this.client = client;
         ref = new Reference( new Reference( url ), "/" );
     }
 
@@ -48,29 +49,15 @@ public class Resources
         return context;
     }
 
-
     public void setAuth( String user, String password )
     {
         this.user = user;
         this.password = password;
     }
 
-    public static DiscoveryClientResource getDiscoveryResource( String url, String user,
-                                                                String password ) throws IOException
-    {
-        Resources resources = new Resources( url );
-
-        if ( user != null && password != null )
-        {
-            resources.setAuth( user, password );
-        }
-
-        return resources.getDiscoveryResource();
-    }
-
     public DiscoveryClientResource getDiscoveryResource() throws IOException
     {
-        DiscoveryClientResource discovery = withAuth( new DiscoveryClientResource( createContext(), ref, mapper ) );
+        DiscoveryClientResource discovery = withAuth( new DiscoveryClientResource( createContext(), ref ) );
         discovery.readInformation();
         return discovery;
 
@@ -132,7 +119,6 @@ public class Resources
     public class DiscoveryClientResource extends ClientResource
     {
         private String version;
-        private final ObjectMapper mapper;
         private String cypherPath;
         private String transactionPath;
         private String dataUri;
@@ -140,10 +126,9 @@ public class Resources
         private String relationshipTypesPath;
         private String propertyKeysPath;
 
-        public DiscoveryClientResource( Context context, Reference ref, ObjectMapper mapper )
+        public DiscoveryClientResource( Context context, Reference ref )
         {
             super( context, ref );
-            this.mapper = mapper;
             getClientInfo().setAcceptedMediaTypes( streamingJson() );
         }
 

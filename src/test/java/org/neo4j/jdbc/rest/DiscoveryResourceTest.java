@@ -3,6 +3,7 @@ package org.neo4j.jdbc.rest;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.restlet.Client;
 
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.DynamicRelationshipType;
@@ -39,7 +40,7 @@ public class DiscoveryResourceTest
             tx.success();
         }
         webServer = TestServer.startWebServer( db, TestServer.PORT, false );
-        resource = Resources.getDiscoveryResource( URI, null, null );
+        resource = new Resources(URI, new Client("HTTP")).getDiscoveryResource(  );
     }
 
     @AfterClass

@@ -36,7 +36,6 @@ public class TransactionalQueryExecutor implements QueryExecutor
     private static final Iterator<ExecutionResult> NO_RESULTS = Collections.<ExecutionResult>emptyList().iterator();
     private final Resources.TransactionClientResource commitResource;
 
-    private final String url;
     private final Resources.TransactionClientResource txResource;
     private final ThreadLocal<Resources.TransactionClientResource> transaction = new ThreadLocal<Resources
             .TransactionClientResource>();
@@ -47,21 +46,12 @@ public class TransactionalQueryExecutor implements QueryExecutor
     private final StreamingParser resultParser;
     private final Resources.DiscoveryClientResource discovery;
 
-    public TransactionalQueryExecutor( String connectionUrl, String user, String password ) throws SQLException
+    public TransactionalQueryExecutor( Resources resources ) throws SQLException
     {
         try
         {
-            url = connectionUrl;
-            if ( log.isDebugEnabled() )
-            {
-                log.debug( "Connecting to URL " + url );
-            }
-            resources = new Resources( url );
+            this.resources = resources;
 
-            if ( user != null && password != null )
-            {
-                resources.setAuth( user, password );
-            }
             resultParser = new StreamingParser( mapper );
 
             discovery = resources.getDiscoveryResource();
