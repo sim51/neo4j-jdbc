@@ -1,5 +1,7 @@
 == Neo4j JDBC driver ==
 
+image:https://travis-ci.org/neo4j-contrib/neo4j-jdbc.svg?branch=master["Build Status", link="https://travis-ci.org/neo4j-contrib/neo4j-jdbc"]
+
 This is a first attempt at creating a JDBC driver for the graph database Neo4j. While Neo4j is a graph database, and
 JDBC is based on the relational paradigm, this driver provides a way to bridge this gap.
 
