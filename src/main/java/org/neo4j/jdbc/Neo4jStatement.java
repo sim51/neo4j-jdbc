@@ -109,6 +109,13 @@ public class Neo4jStatement
     @Override
     public void cancel() throws SQLException
     {
+        if ( resultSet != null )
+        {
+            resultSet.close();
+        }
+        connection = null;
+        resultSet = null;
+        sqlWarning = null;
     }
 
     @Override

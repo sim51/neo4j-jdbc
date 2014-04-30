@@ -24,11 +24,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
+import java.sql.Statement;
 
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
 import org.neo4j.graphdb.DynamicLabel;
+import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.Node;
 import org.neo4j.tooling.GlobalGraphOperations;
 
@@ -109,6 +112,134 @@ public class Neo4jStatementTest extends Neo4jJdbcTest
         }
         done();
         assertEquals( 1, count );
+    }
+
+    @Test
+    public void testRunMultipleStatementsAndCloseTheFirstRsEarly() throws Exception
+    {
+        final Statement stmt = conn.createStatement();
+        stmt.executeUpdate( "foreach (r in range(0,10) | create (n:User {id:r}))" );
+
+        ResultSet rs = stmt.executeQuery( "MATCH (n:User) return id(n)" );
+        rs.next();
+        rs.close();
+
+        rs = stmt.executeQuery( "MATCH (n:User) return id(n)" );
+        int count=0;
+
+        while (rs.next()) count++;
+        rs.close();
+
+        assertEquals( 11, count );
+        done();
+    }
+
+    @Test
+    public void testRunMultipleStatementsAndCloseTheFirstStmtEarly() throws Exception
+    {
+        Statement stmt = conn.createStatement();
+        stmt.executeUpdate( "foreach (r in range(0,10) | create (n:User {id:r}))" );
+
+        ResultSet rs = stmt.executeQuery( "MATCH (n:User) return id(n)" );
+        rs.next();
+        stmt.close();
+
+        stmt = conn.createStatement();
+        rs = stmt.executeQuery( "MATCH (n:User) return id(n)" );
+        int count=0;
+
+        while (rs.next()) count++;
+        rs.close();
+
+        assertEquals( 11, count );
+        done();
+    }
+
+    @Test
+    public void testRunMultipleStatementsAndCancelTheFirstStmtEarly() throws Exception
+    {
+        Statement stmt = conn.createStatement();
+        stmt.executeUpdate( "foreach (r in range(0,10) | create (n:User {id:r}))" );
+
+        ResultSet rs = stmt.executeQuery( "MATCH (n:User) return id(n)" );
+        rs.next();
+        stmt.cancel();
+
+        stmt = conn.createStatement();
+        rs = stmt.executeQuery( "MATCH (n:User) return id(n)" );
+        int count=0;
+
+        while (rs.next()) count++;
+        rs.close();
+
+        assertEquals( 11, count );
+        done();
+    }
+
+    @Test
+    public void testRunMultipleStatementsAndCancelAndCloseTheFirstStmtEarly() throws Exception
+    {
+        Statement stmt = conn.createStatement();
+        stmt.executeUpdate( "foreach (r in range(0,50000) | create (n:User {id:r}))" );
+
+        stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery( "MATCH (n:User) return id(n)" );
+        int count=0;
+        while (rs.next()) {
+            rs.getObject( 1 );
+            count++;
+            if (count==25000) {
+                stmt.cancel();
+                break;
+            }
+        }
+        rs.close();
+        stmt.close();
+
+        stmt = conn.createStatement();
+        rs = stmt.executeQuery( "MATCH (n:User) return id(n)" );
+        count=0;
+
+        while (rs.next()) count++;
+        rs.close();
+
+        assertEquals( 50001, count );
+        done();
+    }
+
+
+    @Test
+    public void testRunMultipleStatementsAndCancelAndCloseTheFirstStmtEarlyAutoCommitFalse() throws Exception
+    {
+        Assume.assumeTrue( mode == Mode.embedded || mode == Mode.server_tx );
+        Statement stmt = conn.createStatement();
+        stmt.executeUpdate( "foreach (r in range(0,50000) | create (n:User {id:r}))" );
+
+        conn.setAutoCommit( false );
+
+        stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery( "MATCH (n:User) return id(n)" );
+        int count=0;
+        while (rs.next()) {
+            rs.getObject( 1 );
+            count++;
+            if (count==25000) {
+                stmt.cancel();
+                break;
+            }
+        }
+        rs.close();
+        stmt.close();
+
+        stmt = conn.createStatement();
+        rs = stmt.executeQuery( "MATCH (n:User) return id(n)" );
+        count=0;
+
+        while (rs.next()) count++;
+        rs.close();
+
+        assertEquals( 50001, count );
+        done();
     }
 
     @Test
