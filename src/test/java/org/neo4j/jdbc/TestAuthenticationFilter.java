@@ -1,5 +1,8 @@
 package org.neo4j.jdbc;
 
+
+import org.apache.commons.codec.binary.Base64;
+
 import java.io.IOException;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -10,7 +13,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import sun.misc.BASE64Decoder;
 
 /**
  * @author mh
@@ -61,7 +63,7 @@ public class TestAuthenticationFilter implements Filter
         }
 
         final String encoded = header.substring( header.indexOf( " " ) + 1 );
-        byte[] credentials = new BASE64Decoder().decodeBuffer( encoded );
+        byte[] credentials = Base64.decodeBase64(encoded );
         final String credentialString = new String( credentials );
         return credentialString.equals( String.format( "%s:%s", USER, PASSWORD ) );
     }
