@@ -7,14 +7,14 @@ JDBC is based on the relational paradigm, this driver provides a way to bridge t
 
 The textual representation of declarative queries in the Cypher query language which returns tabular results make it possible to use the JDBC concepts and APIs.
 
-The driver can be used in conjunction with 
-
-Here is a binary download of the http://dist.neo4j.org/neo4j-jdbc/neo4j-jdbc-2.0.1-SNAPSHOT-jar-with-dependencies.jar[Neo4j-2.0.1-SNAPSHOT Version]
+The driver can be used in conjunction with
 
 * a Neo4j Server
 * a on disk Neo4j database
 * an existing Neo4j GraphDatabaseService instance passed to the driver
 * an temporary in-memory instance of Neo4j
+
+Here is a binary download of the http://dist.neo4j.org/neo4j-jdbc/neo4j-jdbc-2.0.1-SNAPSHOT-jar-with-dependencies.jar[Neo4j-2.0.1-SNAPSHOT Version]
 
 === Minimum Viable Snippet ===
 
@@ -35,6 +35,47 @@ try(Statement stmt = con.createStatement())
     }
 }
 
+-----------------------------------------------------------------------------
+
+=== Maven dependency ===
+
+-----------------------------------------------------------------------------
+<project>
+
+  [..]
+
+  <dependencies>
+    <dependency>
+      <groupId>org.neo4j</groupId>
+      <artifactId>neo4j-jdbc</artifactId>
+      <version>2.0.2</version>
+    </dependency>
+
+    <!-- For file and in-memory support, add these two as well -->
+    <dependency>
+      <groupId>org.neo4j</groupId>
+      <artifactId>neo4j</artifactId>
+      <version>2.0.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.neo4j</groupId>
+      <artifactId>neo4j-kernel</artifactId>
+      <version>2.0.3</version>
+      <type>test-jar</type>
+    </dependency>
+
+  </dependencies>
+  <repositories>
+    <repository>
+      <id>neo4j-public</id>
+      <url>http://m2.neo4j.org/content/groups/public</url>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>warn</checksumPolicy>
+      </releases>
+    </repository>
+  </repositories>
+</project>
 -----------------------------------------------------------------------------
 
 === Usage ===
