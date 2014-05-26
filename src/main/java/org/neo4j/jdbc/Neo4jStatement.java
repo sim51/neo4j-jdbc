@@ -36,6 +36,7 @@ public class Neo4jStatement
     protected Neo4jConnection connection;
     protected ResultSet resultSet;
     protected SQLWarning sqlWarning;
+    private boolean closeOnCompletion;
 
     public Neo4jStatement( Neo4jConnection connection )
     {
@@ -180,6 +181,7 @@ public class Neo4jStatement
     @Override
     public boolean getMoreResults() throws SQLException
     {
+        if (resultSet!=null) resultSet.close();
         resultSet = null;
         return false;
     }
@@ -325,10 +327,11 @@ public class Neo4jStatement
 
     public void closeOnCompletion() throws SQLException
     {
+        this.closeOnCompletion = true;
     }
 
     public boolean isCloseOnCompletion() throws SQLException
     {
-        return false;
+        return closeOnCompletion;
     }
 }
