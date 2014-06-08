@@ -24,6 +24,7 @@ import static org.junit.Assert.assertEquals;
 public class DiscoveryResourceTest
 {
     public static final String URI = "http://localhost:" + TestServer.PORT;
+    public static final String USER_AGENT = "Neo4j JDBC Driver/<unversioned>";
     private static WebServer webServer;
     private static GraphDatabaseAPI db;
     private static Resources.DiscoveryClientResource resource;
@@ -40,7 +41,7 @@ public class DiscoveryResourceTest
             tx.success();
         }
         webServer = TestServer.startWebServer( db, TestServer.PORT, false );
-        resource = new Resources(URI, new Client("HTTP")).getDiscoveryResource(  );
+        resource = new Resources(URI, new Client("HTTP"), USER_AGENT ).getDiscoveryResource(  );
     }
 
     @AfterClass
@@ -85,5 +86,11 @@ public class DiscoveryResourceTest
     public void testGetRelationshipTypes() throws Exception
     {
         assertEquals( asList( "FOO_BAR" ), resource.getRelationshipTypes() );
+    }
+
+    @Test
+    public void testUserAgent()
+    {
+        assertEquals( USER_AGENT, resource.getClientInfo().getAgent() );
     }
 }

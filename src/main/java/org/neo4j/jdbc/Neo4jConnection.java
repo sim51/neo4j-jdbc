@@ -47,6 +47,7 @@ import org.neo4j.cypherdsl.grammar.ExecuteWithParameters;
 import org.neo4j.jdbc.rest.Resources;
 import org.neo4j.jdbc.rest.RestQueryExecutor;
 import org.neo4j.jdbc.rest.TransactionalQueryExecutor;
+import org.neo4j.jdbc.util.UserAgentBuilder;
 
 /**
  * Implementation of Connection that delegates to the Neo4j REST API and sends queries as Cypher requests
@@ -54,6 +55,7 @@ import org.neo4j.jdbc.rest.TransactionalQueryExecutor;
 public class Neo4jConnection extends AbstractConnection
 {
     protected final static Log log = LogFactory.getLog( Neo4jConnection.class );
+
     private String url;
 
     private QueryExecutor queryExecutor;
@@ -66,6 +68,7 @@ public class Neo4jConnection extends AbstractConnection
     private SQLWarning sqlWarnings;
     private boolean readonly = false;
     private boolean autoCommit = true;
+    private final UserAgentBuilder userAgentBuilder;
 
     public Neo4jConnection( Driver driver, String jdbcUrl, Properties properties ) throws SQLException
     {
@@ -73,14 +76,16 @@ public class Neo4jConnection extends AbstractConnection
         this.url = jdbcUrl;
         this.properties.putAll( properties );
         this.debug = hasDebug();
+        this.userAgentBuilder = new UserAgentBuilder( properties );
         final String connectionUrl = jdbcUrl.substring( Driver.URL_PREFIX.length() );
-        this.queryExecutor = createExecutor( connectionUrl, getUser(), getPassword(), properties );
+
+        this.queryExecutor = createExecutor( connectionUrl, getUser(), getPassword(), userAgentBuilder.getAgent() );
         this.version = this.queryExecutor.getVersion();
         validateVersion();
     }
 
     private QueryExecutor createExecutor( String connectionUrl, String user, String password,
-                                          Properties properties ) throws SQLException
+                                          String userAgent ) throws SQLException
     {
         if ( connectionUrl.contains( "://" ) )
         {
@@ -95,7 +100,7 @@ public class Neo4jConnection extends AbstractConnection
 
             Client client = new Client( new Context(), Arrays.asList( Protocol.valueOf(remoteUrl.split( ":" )[0]) ), properties.getProperty( "restlet.helperclass" ) );
 
-            Resources resources = new Resources( remoteUrl, client );
+            Resources resources = new Resources( remoteUrl, client, userAgent );
 
             if ( user != null && password != null )
             {
