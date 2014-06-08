@@ -35,10 +35,12 @@ public class Resources
     private final Reference ref;
     private String user;
     private String password;
+    private final String userAgent;
 
-    public Resources( String url, Client client )
+    public Resources( String url, Client client, String userAgent )
     {
         this.client = client;
+        this.userAgent = userAgent;
         ref = new Reference( new Reference( url ), "/" );
     }
 
@@ -57,7 +59,7 @@ public class Resources
 
     public DiscoveryClientResource getDiscoveryResource() throws IOException
     {
-        DiscoveryClientResource discovery = withAuth( new DiscoveryClientResource( createContext(), ref ) );
+        DiscoveryClientResource discovery = withAuth( new DiscoveryClientResource( createContext(), ref, userAgent ) );
         discovery.readInformation();
         return discovery;
 
@@ -79,17 +81,17 @@ public class Resources
 
     public ClientResource getCypherResource( String cypherPath )
     {
-        return withAuth( new CypherClientResource( new Context(), cypherPath, mapper ) );
+        return withAuth( new CypherClientResource( new Context(), cypherPath, mapper, userAgent ) );
     }
 
     public TransactionClientResource getTransactionResource( String transactionPath )
     {
-        return withAuth( new TransactionClientResource( new Context(), transactionPath ) );
+        return withAuth( new TransactionClientResource( new Context(), transactionPath, userAgent ) );
     }
 
     public TransactionClientResource getTransactionResource( Reference transactionPath )
     {
-        return withAuth( new TransactionClientResource( new Context(), transactionPath ) );
+        return withAuth( new TransactionClientResource( new Context(), transactionPath, userAgent ) );
     }
 
     public JsonNode readJsonFrom( String uri )
@@ -116,7 +118,26 @@ public class Resources
         return fieldNode.getTextValue();
     }
 
-    public class DiscoveryClientResource extends ClientResource
+    public static abstract class Neo4jClientResource extends ClientResource
+    {
+
+        public Neo4jClientResource( Context context, Reference ref, String userAgent )
+        {
+            super( context, ref );
+            getClientInfo().setAcceptedMediaTypes( streamingJson() );
+            getClientInfo().setAgent( userAgent );
+        }
+
+        public Neo4jClientResource( Context context, String uri, String userAgent )
+        {
+            super(context, uri);
+            getClientInfo().setAcceptedMediaTypes( streamingJson() );
+            getClientInfo().setAgent( userAgent );
+        }
+
+    }
+
+    public class DiscoveryClientResource extends Neo4jClientResource
     {
         private String version;
         private String cypherPath;
@@ -126,10 +147,9 @@ public class Resources
         private String relationshipTypesPath;
         private String propertyKeysPath;
 
-        public DiscoveryClientResource( Context context, Reference ref )
+        public DiscoveryClientResource( Context context, Reference ref, String userAgent )
         {
-            super( context, ref );
-            getClientInfo().setAcceptedMediaTypes( streamingJson() );
+            super(context, ref, userAgent);
         }
 
         public String getVersion()
@@ -216,15 +236,14 @@ public class Resources
     }
 
 
-    private static class CypherClientResource extends ClientResource
+    private static class CypherClientResource extends Neo4jClientResource
     {
         private final ObjectMapper mapper;
 
-        public CypherClientResource( final Context context, String cypherPath, ObjectMapper mapper )
+        public CypherClientResource( final Context context, String cypherPath, ObjectMapper mapper, String userAgent )
         {
-            super( context, cypherPath );
+            super( context, cypherPath, userAgent );
             this.mapper = mapper;
-            getClientInfo().setAcceptedMediaTypes( streamingJson() );
         }
 
         @Override
@@ -254,24 +273,26 @@ public class Resources
         return withAuth( res.subResource( segment ) );
     }
 
-    public static class TransactionClientResource extends ClientResource
+    public static class TransactionClientResource extends Neo4jClientResource
     {
 
-        public TransactionClientResource( final Context context, String path )
+        private final String userAgent;
+
+        public TransactionClientResource( final Context context, String path, String userAgent )
         {
-            super( context, path );
-            getClientInfo().setAcceptedMediaTypes( streamingJson() );
+            super( context, path, userAgent );
+            this.userAgent = userAgent;
         }
 
-        public TransactionClientResource( final Context context, Reference path )
+        public TransactionClientResource( final Context context, Reference path, String userAgent )
         {
-            super( context, path );
-            getClientInfo().setAcceptedMediaTypes( streamingJson() );
+            super( context, path, userAgent );
+            this.userAgent = userAgent;
         }
 
         public TransactionClientResource subResource( String segment )
         {
-            return new TransactionClientResource( getContext(), getReference().clone().addSegment( segment ) );
+            return new TransactionClientResource( getContext(), getReference().clone().addSegment( segment ), userAgent );
         }
 
         @Override
