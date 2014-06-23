@@ -31,7 +31,7 @@ public class Resources
 {
     private final Client client;
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private static ObjectMapper mapper = new ObjectMapper();
     private final Reference ref;
     private String user;
     private String password;
