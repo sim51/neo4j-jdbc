@@ -3,6 +3,7 @@ package org.neo4j.jdbc;
 import java.util.Arrays;
 
 import org.neo4j.kernel.GraphDatabaseAPI;
+import org.neo4j.server.CommunityNeoServer;
 import org.neo4j.server.WrappingNeoServer;
 import org.neo4j.server.configuration.Configurator;
 import org.neo4j.server.configuration.ServerConfigurator;
@@ -19,7 +20,7 @@ public class TestServer
 {
     public static final int PORT = 7475;
 
-    public static WebServer startWebServer( GraphDatabaseAPI gdb, int port, boolean auth )
+    public static CommunityNeoServer startWebServer( GraphDatabaseAPI gdb, int port, boolean auth )
     {
         final ServerConfigurator config = new ServerConfigurator( gdb );
         config.configuration().setProperty( Configurator.WEBSERVER_PORT_PROPERTY_KEY, port );
@@ -40,6 +41,6 @@ public class TestServer
             webServer.addFilter( new TestAuthenticationFilter(), "/*" );
         }
         wrappingNeoServer.start();
-        return webServer;
+        return wrappingNeoServer;
     }
 }

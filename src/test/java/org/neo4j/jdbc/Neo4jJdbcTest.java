@@ -41,6 +41,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.kernel.KernelData;
+import org.neo4j.server.CommunityNeoServer;
 import org.neo4j.server.web.WebServer;
 import org.neo4j.test.ImpermanentGraphDatabase;
 import org.neo4j.test.TestGraphDatabaseFactory;
@@ -61,7 +62,7 @@ public abstract class Neo4jJdbcTest
 
     protected Neo4jConnection conn;
     protected static ImpermanentGraphDatabase gdb;
-    private static WebServer webServer;
+    private static CommunityNeoServer webServer;
     protected final Mode mode;
     private Transaction tx;
 

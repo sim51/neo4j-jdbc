@@ -3,6 +3,7 @@ package org.neo4j.jdbc.rest;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.neo4j.server.CommunityNeoServer;
 import org.restlet.Client;
 
 import org.neo4j.graphdb.DynamicLabel;
@@ -25,7 +26,7 @@ public class DiscoveryResourceTest
 {
     public static final String URI = "http://localhost:" + TestServer.PORT;
     public static final String USER_AGENT = "Neo4j JDBC Driver/<unversioned>";
-    private static WebServer webServer;
+    private static CommunityNeoServer webServer;
     private static GraphDatabaseAPI db;
     private static Resources.DiscoveryClientResource resource;
 
