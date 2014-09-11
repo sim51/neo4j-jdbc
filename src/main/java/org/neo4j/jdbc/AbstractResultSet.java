@@ -1,9 +1,15 @@
 package org.neo4j.jdbc;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.jackson.map.ObjectMapper;
+
+import javax.sql.rowset.serial.SerialArray;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.math.BigDecimal;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Array;
 import java.sql.Blob;
@@ -16,6 +22,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.RowId;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.SQLXML;
 import java.sql.Statement;
@@ -25,13 +32,8 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  * @author mh
@@ -91,7 +93,6 @@ public abstract class AbstractResultSet implements ResultSet
     private String[] extractColumnNames( List<Neo4jColumnMetaData> columns )
     {
         final String[] result = new String[columns.size()];
-        Map<String, Integer> columnNames = new LinkedHashMap<String, Integer>();
         for ( int i = 0; i < cols; i++ )
         {
             result[i] = columns.get( i ).getName();
@@ -141,33 +142,33 @@ public abstract class AbstractResultSet implements ResultSet
     @Override
     public byte getByte( int i ) throws SQLException
     {
-        return ((Number) get( i )).byteValue();
+        return getNumber( i ).byteValue();
     }
 
     @Override
     public short getShort( int i ) throws SQLException
     {
-        return ((Number) get( i )).shortValue();
+        return getNumber( i ).shortValue();
     }
 
     @Override
     public int getInt( int i ) throws SQLException
     {
-        Object value = get( i );
-        if ( value == null || !(value instanceof Integer) )
-        {
-            return 0;
-        }
-        else
-        {
-            return (Integer) value;
-        }
+        return getNumber( i ).intValue();
     }
 
     @Override
     public long getLong( int i ) throws SQLException
     {
-        return ((Number) get( i )).longValue();
+        return getNumber( i ).longValue();
+    }
+
+    private Number getNumber( int i ) throws SQLException
+    {
+        Object value = get( i );
+        if (value == null) return 0;
+        if ( !( value instanceof Number ) ) throw new SQLDataException( "Value is not a number"+value );
+        return ((Number) value );
     }
 
     private Object get( int column ) throws SQLDataException
@@ -186,13 +187,13 @@ public abstract class AbstractResultSet implements ResultSet
     @Override
     public float getFloat( int i ) throws SQLException
     {
-        return ((Number) get( i )).floatValue();
+        return getNumber( i ).floatValue();
     }
 
     @Override
     public double getDouble( int i ) throws SQLException
     {
-        return ((Number) get( i )).doubleValue();
+        return getNumber( i ).doubleValue();
     }
 
     @Override
@@ -210,37 +211,43 @@ public abstract class AbstractResultSet implements ResultSet
     @Override
     public Date getDate( int i ) throws SQLException
     {
-        return (Date) get( i );
+        return new Date(getTimeInMillis( i ));
     }
 
     @Override
     public Time getTime( int i ) throws SQLException
     {
-        return (Time) get( i );
+        return new Time(getTimeInMillis( i ));
     }
 
     @Override
     public Timestamp getTimestamp( int i ) throws SQLException
     {
-        return (Timestamp) get( i );
+        return new Timestamp(getTimeInMillis( i ));
+    }
+
+    private long getTimeInMillis( int i ) throws SQLException
+    {
+        Number number = getNumber( i );
+        return number.longValue();
     }
 
     @Override
     public InputStream getAsciiStream( int i ) throws SQLException
     {
-        return (InputStream) get( i );
+        throw new SQLFeatureNotSupportedException( "Type AsciiStream" );
     }
 
     @Override
     public InputStream getUnicodeStream( int i ) throws SQLException
     {
-        return (InputStream) get( i );
+        throw new SQLFeatureNotSupportedException( "Type UnicodeStream" );
     }
 
     @Override
     public InputStream getBinaryStream( int i ) throws SQLException
     {
-        return (InputStream) get( i );
+        throw new SQLFeatureNotSupportedException( "Type BinaryStream" );
     }
 
     @Override
@@ -435,7 +442,7 @@ public abstract class AbstractResultSet implements ResultSet
     @Override
     public int getFetchDirection() throws SQLException
     {
-        return 0;
+        return FETCH_FORWARD;
     }
 
     @Override
@@ -452,13 +459,13 @@ public abstract class AbstractResultSet implements ResultSet
     @Override
     public int getType() throws SQLException
     {
-        return 0;
+        return TYPE_FORWARD_ONLY;
     }
 
     @Override
     public int getConcurrency() throws SQLException
     {
-        return 0;
+        return CONCUR_READ_ONLY;
     }
 
     @Override
@@ -482,106 +489,127 @@ public abstract class AbstractResultSet implements ResultSet
     @Override
     public void updateNull( int i ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateBoolean( int i, boolean b ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateByte( int i, byte b ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateShort( int i, short i1 ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateInt( int i, int i1 ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateLong( int i, long l ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateFloat( int i, float v ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateDouble( int i, double v ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateBigDecimal( int i, BigDecimal bigDecimal ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateString( int i, String s ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateBytes( int i, byte[] bytes ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateDate( int i, Date date ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateTime( int i, Time time ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateTimestamp( int i, Timestamp timestamp ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateAsciiStream( int i, InputStream inputStream, int i1 ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateBinaryStream( int i, InputStream inputStream, int i1 ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateCharacterStream( int i, Reader reader, int i1 ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateObject( int i, Object o, int i1 ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateObject( int i, Object o ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateNull( String s ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateBoolean( String s, boolean b ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
@@ -592,96 +620,115 @@ public abstract class AbstractResultSet implements ResultSet
     @Override
     public void updateShort( String s, short i ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateInt( String s, int i ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateLong( String s, long l ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateFloat( String s, float v ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateDouble( String s, double v ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateBigDecimal( String s, BigDecimal bigDecimal ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateString( String s, String s1 ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateBytes( String s, byte[] bytes ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateDate( String s, Date date ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateTime( String s, Time time ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateTimestamp( String s, Timestamp timestamp ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateAsciiStream( String s, InputStream inputStream, int i ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateBinaryStream( String s, InputStream inputStream, int i ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateCharacterStream( String s, Reader reader, int i ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateObject( String s, Object o, int i ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateObject( String s, Object o ) throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void insertRow() throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void updateRow() throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
     public void deleteRow() throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "update" );
     }
 
     @Override
@@ -697,11 +744,13 @@ public abstract class AbstractResultSet implements ResultSet
     @Override
     public void moveToInsertRow() throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "move to insert row" );
     }
 
     @Override
     public void moveToCurrentRow() throws SQLException
     {
+        throw new SQLFeatureNotSupportedException( "move to current row" );
     }
 
     @Override
@@ -719,25 +768,25 @@ public abstract class AbstractResultSet implements ResultSet
     @Override
     public Ref getRef( int i ) throws SQLException
     {
-        return null;
+        throw new SQLFeatureNotSupportedException( "get "+"ref" );
     }
 
     @Override
     public Blob getBlob( int i ) throws SQLException
     {
-        return null;
+        throw new SQLFeatureNotSupportedException( "get "+"blob" );
     }
 
     @Override
     public Clob getClob( int i ) throws SQLException
     {
-        return null;
+        throw new SQLFeatureNotSupportedException( "get "+"clob" );
     }
 
     @Override
     public Array getArray( int i ) throws SQLException
     {
-        return null;
+        throw new SQLFeatureNotSupportedException( "get "+"array" );
     }
 
     @Override
@@ -755,7 +804,7 @@ public abstract class AbstractResultSet implements ResultSet
     @Override
     public Blob getBlob( String s ) throws SQLException
     {
-        return null;
+        return getBlob( findColumn( s ) );
     }
 
     @Override
@@ -773,7 +822,13 @@ public abstract class AbstractResultSet implements ResultSet
     @Override
     public Date getDate( int i, Calendar calendar ) throws SQLException
     {
-        return null;
+        return new Date(getCalendarTimeInMillis( i, calendar ));
+    }
+
+    private long getCalendarTimeInMillis( int i, Calendar calendar ) throws SQLException
+    {
+        calendar.setTimeInMillis( getTimeInMillis( i ));
+        return calendar.getTimeInMillis();
     }
 
     @Override
@@ -785,7 +840,7 @@ public abstract class AbstractResultSet implements ResultSet
     @Override
     public Time getTime( int i, Calendar calendar ) throws SQLException
     {
-        return null;
+        return new Time(getCalendarTimeInMillis( i, calendar ));
     }
 
     @Override
@@ -797,7 +852,7 @@ public abstract class AbstractResultSet implements ResultSet
     @Override
     public Timestamp getTimestamp( int i, Calendar calendar ) throws SQLException
     {
-        return null;
+        return new Timestamp(getCalendarTimeInMillis( i, calendar ));
     }
 
     @Override
@@ -809,7 +864,12 @@ public abstract class AbstractResultSet implements ResultSet
     @Override
     public URL getURL( int i ) throws SQLException
     {
-        return null;
+        String url = getString( i );
+        try {
+            return new URL(url);
+        } catch(MalformedURLException ex) {
+            throw new SQLDataException( "Malformed url "+url );
+        }
     }
 
     @Override
@@ -821,287 +881,337 @@ public abstract class AbstractResultSet implements ResultSet
     @Override
     public void updateRef( int i, Ref ref ) throws SQLException
     {
+        String type = "ref";
+        notSupportedUpdate( type );
+    }
+
+    private void notSupportedUpdate( String type ) throws SQLFeatureNotSupportedException
+    {
+        throw new SQLFeatureNotSupportedException( "update "+ type );
     }
 
     @Override
     public void updateRef( String s, Ref ref ) throws SQLException
     {
+        notSupportedUpdate( "ref" );
     }
 
     @Override
     public void updateBlob( int i, Blob blob ) throws SQLException
     {
+        notSupportedUpdate( "blob" );
     }
 
     @Override
     public void updateBlob( String s, Blob blob ) throws SQLException
     {
+        notSupportedUpdate( "blob" );
     }
 
     @Override
     public void updateClob( int i, Clob clob ) throws SQLException
     {
+        notSupportedUpdate( "clob" );
     }
 
     @Override
     public void updateClob( String s, Clob clob ) throws SQLException
     {
+        notSupportedUpdate( "clob" );
     }
 
     @Override
     public void updateArray( int i, Array array ) throws SQLException
     {
+        notSupportedUpdate( "array" );
     }
 
     @Override
     public void updateArray( String s, Array array ) throws SQLException
     {
+        notSupportedUpdate( "array" );
     }
 
     @Override
     public RowId getRowId( int i ) throws SQLException
     {
-        return null;
+        throw new SQLFeatureNotSupportedException( "get "+"rowid" );
     }
 
     @Override
     public RowId getRowId( String s ) throws SQLException
     {
-        return null;
+        throw new SQLFeatureNotSupportedException( "get "+"rowid" );
     }
 
     @Override
     public void updateRowId( int i, RowId rowId ) throws SQLException
     {
+        notSupportedUpdate( "rowid" );
     }
 
     @Override
     public void updateRowId( String s, RowId rowId ) throws SQLException
     {
+        notSupportedUpdate( "rowid" );
     }
 
     @Override
     public int getHoldability() throws SQLException
     {
-        return 0;
+        return CLOSE_CURSORS_AT_COMMIT;
     }
 
     @Override
     public void updateNString( int i, String s ) throws SQLException
     {
+        notSupportedUpdate( "nstring" );
     }
 
     @Override
     public void updateNString( String s, String s1 ) throws SQLException
     {
+        notSupportedUpdate( "nstring" );
     }
 
     @Override
     public void updateNClob( int i, NClob nClob ) throws SQLException
     {
+        notSupportedUpdate( "nclob" );
     }
 
     @Override
     public void updateNClob( String s, NClob nClob ) throws SQLException
     {
+        notSupportedUpdate( "nclob" );
     }
 
     @Override
     public NClob getNClob( int i ) throws SQLException
     {
-        return null;
+        throw new SQLFeatureNotSupportedException( "get "+"nclob" );
     }
 
     @Override
     public NClob getNClob( String s ) throws SQLException
     {
-        return null;
+        throw new SQLFeatureNotSupportedException( "get "+"nclob" );
     }
 
     @Override
     public SQLXML getSQLXML( int i ) throws SQLException
     {
-        return null;
+        throw new SQLFeatureNotSupportedException( "get "+"sqlxml" );
     }
 
     @Override
     public SQLXML getSQLXML( String s ) throws SQLException
     {
-        return null;
+        throw new SQLFeatureNotSupportedException( "get "+"sqlxml" );
     }
 
     @Override
     public void updateSQLXML( int i, SQLXML sqlxml ) throws SQLException
     {
+        notSupportedUpdate( "sqlxml" );
     }
 
     @Override
     public void updateSQLXML( String s, SQLXML sqlxml ) throws SQLException
     {
+        notSupportedUpdate( "sqlxml" );
     }
 
     @Override
     public String getNString( int i ) throws SQLException
     {
-        return null;
+        return getString( i );
     }
 
     @Override
     public String getNString( String s ) throws SQLException
     {
-        return null;
+        return getString( s );
     }
 
     @Override
     public Reader getNCharacterStream( int i ) throws SQLException
     {
-        return null;
+        return getCharacterStream( i );
     }
 
     @Override
     public Reader getNCharacterStream( String s ) throws SQLException
     {
-        return null;
+        return getCharacterStream( s );
     }
 
     @Override
     public void updateNCharacterStream( int i, Reader reader, long l ) throws SQLException
     {
+        notSupportedUpdate( "ncharacterstream" );
     }
 
     @Override
     public void updateNCharacterStream( String s, Reader reader, long l ) throws SQLException
     {
+        notSupportedUpdate( "ncharacterstream" );
     }
 
     @Override
     public void updateAsciiStream( int i, InputStream inputStream, long l ) throws SQLException
     {
+        notSupportedUpdate( "asciistream" );
     }
 
     @Override
     public void updateBinaryStream( int i, InputStream inputStream, long l ) throws SQLException
     {
+        notSupportedUpdate( "binarystream" );
     }
 
     @Override
     public void updateCharacterStream( int i, Reader reader, long l ) throws SQLException
     {
+        notSupportedUpdate( "characterstream" );
     }
 
     @Override
     public void updateAsciiStream( String s, InputStream inputStream, long l ) throws SQLException
     {
+        notSupportedUpdate( "asciistream" );
     }
 
     @Override
     public void updateBinaryStream( String s, InputStream inputStream, long l ) throws SQLException
     {
+        notSupportedUpdate( "binarystream" );
     }
 
     @Override
     public void updateCharacterStream( String s, Reader reader, long l ) throws SQLException
     {
+        notSupportedUpdate( "characterstream" );
     }
 
     @Override
     public void updateBlob( int i, InputStream inputStream, long l ) throws SQLException
     {
+        notSupportedUpdate( "blob" );
     }
 
     @Override
     public void updateBlob( String s, InputStream inputStream, long l ) throws SQLException
     {
+        notSupportedUpdate( "blob" );
     }
 
     @Override
     public void updateClob( int i, Reader reader, long l ) throws SQLException
     {
+        notSupportedUpdate( "clob" );
     }
 
     @Override
     public void updateClob( String s, Reader reader, long l ) throws SQLException
     {
+        notSupportedUpdate( "clob" );
     }
 
     @Override
     public void updateNClob( int i, Reader reader, long l ) throws SQLException
     {
+        notSupportedUpdate( "nclob" );
     }
 
     @Override
     public void updateNClob( String s, Reader reader, long l ) throws SQLException
     {
+        notSupportedUpdate( "nclob" );
     }
 
     @Override
     public void updateNCharacterStream( int i, Reader reader ) throws SQLException
     {
+        notSupportedUpdate( "ncharacterstream" );
     }
 
     @Override
     public void updateNCharacterStream( String s, Reader reader ) throws SQLException
     {
+        notSupportedUpdate( "ncharacterstream" );
     }
 
     @Override
     public void updateAsciiStream( int i, InputStream inputStream ) throws SQLException
     {
+        notSupportedUpdate( "asciistream" );
     }
 
     @Override
     public void updateBinaryStream( int i, InputStream inputStream ) throws SQLException
     {
+        notSupportedUpdate( "binarystream" );
     }
 
     @Override
     public void updateCharacterStream( int i, Reader reader ) throws SQLException
     {
+        notSupportedUpdate( "characterstream" );        
     }
 
     @Override
     public void updateAsciiStream( String s, InputStream inputStream ) throws SQLException
     {
+        notSupportedUpdate( "asciistream" );
     }
 
     @Override
     public void updateBinaryStream( String s, InputStream inputStream ) throws SQLException
     {
+        notSupportedUpdate( "binarystream" );
     }
 
     @Override
     public void updateCharacterStream( String s, Reader reader ) throws SQLException
     {
+        notSupportedUpdate( "characterstream" );
     }
 
     @Override
     public void updateBlob( int i, InputStream inputStream ) throws SQLException
     {
+        notSupportedUpdate( "blob" );
     }
 
     @Override
     public void updateBlob( String s, InputStream inputStream ) throws SQLException
     {
+        notSupportedUpdate( "blob" );
     }
 
     @Override
     public void updateClob( int i, Reader reader ) throws SQLException
     {
+        notSupportedUpdate( "clob" );
     }
 
     @Override
     public void updateClob( String s, Reader reader ) throws SQLException
     {
+        notSupportedUpdate( "clob" );
     }
 
     @Override
     public void updateNClob( int i, Reader reader ) throws SQLException
     {
+        notSupportedUpdate( "nclob" );
     }
 
     @Override
     public void updateNClob( String s, Reader reader ) throws SQLException
     {
+        notSupportedUpdate( "nclob" );
     }
 
     @Override

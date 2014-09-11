@@ -2,10 +2,15 @@ package org.neo4j.jdbc;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.sql.Types;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -27,15 +32,19 @@ import static org.junit.Assert.assertTrue;
 public class ResultSetTest
 {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    public static final String DATE_STRING = "2014-12-24 13:54";
     private final ResultSet rs;
     private static List<Object> row;
 
     @SuppressWarnings("unchecked")
     @Parameterized.Parameters
-    public static Collection<ResultSet[]> data()
+    public static Collection<ResultSet[]> data() throws Exception
     {
+        long testDate = parseDate( DATE_STRING ).getTime();
         row = Arrays.<Object>asList( "0", 1, (short) 2, 3L, (byte) 4, 5f, 6d, BigDecimal.valueOf( 7L ), null,
-                new String[]{"array"}, Collections.singletonMap( "a", 1 ), Collections.singletonList( "list" ) );
+                new String[]{"array"}, Collections.singletonMap( "a", 1 ), Collections.singletonList( "list" ),
+                testDate,testDate, testDate,"string"
+                );
 
         List<Neo4jColumnMetaData> columns = asList(
                 col( "String", Types.VARCHAR ),
@@ -49,7 +58,11 @@ public class ResultSetTest
                 col( "Null", Types.NULL ),
                 col( "Array", Types.ARRAY ),
                 col( "Map", Types.STRUCT ),
-                col( "List", Types.ARRAY )
+                col( "List", Types.ARRAY ),
+                col( "Date", Types.DATE ),
+                col( "Time", Types.TIME ),
+                col( "Timestamp", Types.TIMESTAMP ),
+                col( "NChar", Types.NCHAR )
         );
 
         return Arrays.<ResultSet[]>asList( new ResultSet[]{new ListResultSet( columns,
@@ -57,6 +70,11 @@ public class ResultSetTest
                 new ResultSet[]{new IteratorResultSet( columns, Arrays.<Object[]>asList( row.toArray() ).iterator(),
                         null )}
         );
+    }
+
+    private static Date parseDate( String dateString ) throws ParseException
+    {
+        return new SimpleDateFormat( "yyyy-MM-dd HH:mm" ).parse( dateString );
     }
 
     public ResultSetTest( ResultSet rs )
@@ -104,6 +122,16 @@ public class ResultSetTest
         assertEquals( row.get( 11 ), rs.getObject( 12 ) );
         assertEquals( OBJECT_MAPPER.writeValueAsString( row.get( 11 ) ), rs.getString( "List" ) );
         assertEquals( OBJECT_MAPPER.writeValueAsString( row.get( 11 ) ), rs.getString( 12 ) );
+
+        long testDateTime = parseDate( DATE_STRING ).getTime();
+        assertEquals( new java.sql.Date( testDateTime ), rs.getDate( 13 ) );
+        assertEquals( new java.sql.Date( testDateTime ), rs.getDate( "Time" ) );
+
+        assertEquals( new Timestamp( testDateTime ), rs.getTimestamp( 14 ) );
+        assertEquals( new Timestamp( testDateTime ), rs.getTimestamp( "Timestamp" ) );
+
+        assertEquals( new Time( testDateTime ), rs.getTime( 14 ) );
+        assertEquals( new Time( testDateTime ), rs.getTime( "Timestamp" ) );
 
         assertFalse( rs.next() );
     }
