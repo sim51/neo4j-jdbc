@@ -97,20 +97,15 @@ public class TransactionalQueryExecutor implements QueryExecutor
         requestData.put( "statements", Statement.toJson( mapper, data ) );
         resource.post( toRepresentation( requestData, resource ) );
         Response response = resource.getResponse();
-        //dump(response);
+        response.getEntity().setCharacterSet( CharacterSet.UTF_8 );
+//        dump( response );
         return response;
     }
 
-    private void dump( Representation response )
+    private void dump( Response response )
     {
-        try
-        {
-            System.out.println( "response.getText() = " + response.getText() );
-        }
-        catch ( IOException e )
-        {
-            throw new RuntimeException( e );
-        }
+        System.out.println( "response.getText() = " + response.getAttributes() );
+        System.out.println( "response.getText() = " + response.getEntityAsText() );
     }
 
     private Representation toRepresentation( ObjectNode requestData, ClientResource requestResource )
@@ -118,7 +113,9 @@ public class TransactionalQueryExecutor implements QueryExecutor
         final String jsonString = toString( requestData );
         final Variant variant = new Variant( MediaType.APPLICATION_JSON );
         variant.setCharacterSet( CharacterSet.UTF_8 );
-        return requestResource.toRepresentation( jsonString, variant );
+        Representation representation = requestResource.toRepresentation( jsonString, variant );
+        representation.setCharacterSet( CharacterSet.UTF_8 );
+        return representation;
     }
 
     public Iterator<ExecutionResult> commit( Statement... statements ) throws SQLException

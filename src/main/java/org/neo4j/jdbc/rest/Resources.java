@@ -15,13 +15,19 @@ import org.codehaus.jackson.type.TypeReference;
 import org.restlet.Client;
 import org.restlet.Context;
 import org.restlet.data.ChallengeScheme;
+import org.restlet.data.CharacterSet;
+import org.restlet.data.ClientInfo;
 import org.restlet.data.MediaType;
 import org.restlet.data.Parameter;
 import org.restlet.data.Preference;
 import org.restlet.data.Reference;
 import org.restlet.data.Status;
+import org.restlet.representation.Representation;
+import org.restlet.representation.Variant;
 import org.restlet.resource.ClientResource;
 import org.restlet.util.Series;
+
+import static java.util.Arrays.asList;
 
 /**
  * @author mh
@@ -42,6 +48,12 @@ public class Resources
         this.client = client;
         this.userAgent = userAgent;
         ref = new Reference( new Reference( url ), "/" );
+    }
+
+    private static void configureClient( Context context, ClientInfo clientInfo )
+    {
+        clientInfo.setAcceptedMediaTypes( streamingJson() );
+        clientInfo.setAcceptedCharacterSets( charsetUtf8() );
     }
 
     private Context createContext()
@@ -98,8 +110,10 @@ public class Resources
     {
         try
         {
-            ClientResource resource = withAuth( new ClientResource( createContext(), uri ) );
-            resource.getClientInfo().setAcceptedMediaTypes( streamingJson() );
+            Context context = createContext();
+            ClientResource resource = withAuth( new ClientResource( context, uri ) );
+
+            configureClient( context, resource.getClientInfo() );
             return mapper.readTree( resource.get().getReader() );
         }
         catch ( IOException ioe )
@@ -124,14 +138,14 @@ public class Resources
         public Neo4jClientResource( Context context, Reference ref, String userAgent )
         {
             super( context, ref );
-            getClientInfo().setAcceptedMediaTypes( streamingJson() );
+            configureClient( context, getClientInfo() );
             getClientInfo().setAgent( userAgent );
         }
 
         public Neo4jClientResource( Context context, String uri, String userAgent )
         {
             super(context, uri);
-            getClientInfo().setAcceptedMediaTypes( streamingJson() );
+            configureClient( context, getClientInfo() );
             getClientInfo().setAgent( userAgent );
         }
 
@@ -150,6 +164,7 @@ public class Resources
         public DiscoveryClientResource( Context context, Reference ref, String userAgent )
         {
             super(context, ref, userAgent);
+            configureClient( context, getClientInfo() );
         }
 
         public String getVersion()
@@ -233,6 +248,16 @@ public class Resources
         {
             return transactionPath;
         }
+
+        @Override
+        public Representation toRepresentation( Object source, Variant target )
+        {
+            target.setCharacterSet( CharacterSet.UTF_8 );
+            Representation representation = super.toRepresentation( source, target );
+            representation.setCharacterSet( CharacterSet.UTF_8 );
+            return representation;
+        }
+
     }
 
 
@@ -244,6 +269,16 @@ public class Resources
         {
             super( context, cypherPath, userAgent );
             this.mapper = mapper;
+            configureClient( context, getClientInfo() );
+        }
+
+        @Override
+        public Representation toRepresentation( Object source, Variant target )
+        {
+            target.setCharacterSet( CharacterSet.UTF_8 );
+            Representation representation = super.toRepresentation( source, target );
+            representation.setCharacterSet( CharacterSet.UTF_8 );
+            return representation;
         }
 
         @Override
@@ -282,17 +317,28 @@ public class Resources
         {
             super( context, path, userAgent );
             this.userAgent = userAgent;
+            configureClient( context, getClientInfo() );
         }
 
         public TransactionClientResource( final Context context, Reference path, String userAgent )
         {
             super( context, path, userAgent );
             this.userAgent = userAgent;
+            configureClient( context, getClientInfo() );
         }
 
         public TransactionClientResource subResource( String segment )
         {
             return new TransactionClientResource( getContext(), getReference().clone().addSegment( segment ), userAgent );
+        }
+
+        @Override
+        public Representation toRepresentation( Object source, Variant target )
+        {
+            target.setCharacterSet( CharacterSet.UTF_8 );
+            Representation representation = super.toRepresentation( source, target );
+            representation.setCharacterSet( CharacterSet.UTF_8 );
+            return representation;
         }
 
         @Override
@@ -327,6 +373,11 @@ public class Resources
             }
             return errors;
         }
+    }
+
+    private static List<Preference<CharacterSet>> charsetUtf8()
+    {
+        return asList ( new Preference<>( CharacterSet.UTF_8 ));
     }
 
     private static List<Preference<MediaType>> streamingJson()
