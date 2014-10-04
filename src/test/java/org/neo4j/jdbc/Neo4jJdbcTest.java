@@ -96,7 +96,6 @@ public abstract class Neo4jJdbcTest
     public Neo4jJdbcTest( Mode mode ) throws SQLException
     {
         this.mode = mode;
-        System.out.println( "Mode " + mode );
         final Driver driver = new Driver();
         final Properties props = new Properties();
         gdb.cleanContent();

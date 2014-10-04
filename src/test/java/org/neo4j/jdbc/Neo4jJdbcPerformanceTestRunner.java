@@ -66,7 +66,6 @@ public class Neo4jJdbcPerformanceTestRunner
     {
         long delta = 0;
         execute( con );
-        System.out.println( "START" );
         for ( int i = 0; i < RUNS; i++ )
         {
             delta += execute( con );
