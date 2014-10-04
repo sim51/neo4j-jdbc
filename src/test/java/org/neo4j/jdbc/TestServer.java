@@ -29,9 +29,9 @@ public class TestServer
             protected Iterable<ServerModule> createServerModules()
             {
                 return Arrays.asList(
-                        new DiscoveryModule( webServer ),
-                        new RESTApiModule( webServer, database, configurator.configuration() ),
-                        new ThirdPartyJAXRSModule( webServer, configurator, this ) );
+                        new DiscoveryModule( webServer, getLogging() ),
+                        new RESTApiModule( webServer, database, configurator.configuration(), getLogging() ),
+                        new ThirdPartyJAXRSModule( webServer, configurator, getLogging(), this ) );
             }
         };
         final WebServer webServer = wrappingNeoServer.getWebServer();
