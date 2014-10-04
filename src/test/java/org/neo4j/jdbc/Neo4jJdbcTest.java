@@ -59,7 +59,8 @@ public abstract class Neo4jJdbcTest
 
     protected static String nodeByIdQuery( long nodeId )
     {
-        return "start n=node(" + nodeId + ") return ID(n) as id";
+        return "match (n) where id(n) = " + nodeId +
+                " return ID(n) as id";
     }
 
     protected Neo4jConnection conn;
@@ -98,6 +99,11 @@ public abstract class Neo4jJdbcTest
     public Neo4jJdbcTest( Mode mode ) throws SQLException
     {
         this.mode = mode;
+<<<<<<< HEAD
+=======
+        final Driver driver = new Driver();
+        final Properties props = new Properties();
+>>>>>>> Update to Neo4j 2.2-SNAPSHOT
         gdb.cleanContent();
         startServer( mode );
         driver = new Driver();
@@ -195,10 +201,6 @@ public abstract class Neo4jJdbcTest
 
     protected void createTableMetaData( GraphDatabaseService gdb, String typeName, String propName, String propType )
     {
-        // CYPHER 1.7 START n=node(0)
-        // MATCH (n)-[:TYPE]->(type)-[:HAS_PROPERTY]->(property)
-        // WHERE type.type={typename}
-        // RETURN type.type,property.name,property.type
         final Transaction tx = gdb.beginTx();
         try
         {
