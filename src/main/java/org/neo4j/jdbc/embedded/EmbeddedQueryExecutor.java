@@ -24,7 +24,6 @@ import org.neo4j.kernel.KernelData;
 public class EmbeddedQueryExecutor implements QueryExecutor
 {
 
-
     private final ExecutionEngine executionEngine;
     private final GraphDatabaseService gds;
 
