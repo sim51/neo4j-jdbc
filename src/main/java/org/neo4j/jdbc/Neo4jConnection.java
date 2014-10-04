@@ -20,26 +20,8 @@
 
 package org.neo4j.jdbc;
 
-import java.io.IOException;
-import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.SQLWarning;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.restlet.Client;
-import org.restlet.Context;
-import org.restlet.data.Protocol;
-
 import org.neo4j.cypherdsl.CypherQuery;
 import org.neo4j.cypherdsl.expression.Expression;
 import org.neo4j.cypherdsl.grammar.Execute;
@@ -48,6 +30,13 @@ import org.neo4j.jdbc.rest.Resources;
 import org.neo4j.jdbc.rest.RestQueryExecutor;
 import org.neo4j.jdbc.rest.TransactionalQueryExecutor;
 import org.neo4j.jdbc.util.UserAgentBuilder;
+import org.restlet.Client;
+import org.restlet.Context;
+import org.restlet.data.Protocol;
+
+import java.io.IOException;
+import java.sql.*;
+import java.util.*;
 
 /**
  * Implementation of Connection that delegates to the Neo4j REST API and sends queries as Cypher requests
@@ -77,11 +66,33 @@ public class Neo4jConnection extends AbstractConnection
         this.properties.putAll( properties );
         this.debug = hasDebug();
         this.userAgentBuilder = new UserAgentBuilder( properties );
-        final String connectionUrl = jdbcUrl.substring( Driver.URL_PREFIX.length() );
+        final String connectionUrl = extractConnectionUrl( jdbcUrl );
 
         this.queryExecutor = createExecutor( connectionUrl, getUser(), getPassword(), userAgentBuilder.getAgent() );
         this.version = this.queryExecutor.getVersion();
         validateVersion();
+    }
+
+    private static String extractConnectionUrl( String jdbcUrl ) {
+        if ( jdbcUrl == null ) throw new IllegalArgumentException( "JDBC URL " +
+                "must not be null" );
+
+        if ( jdbcUrl.isEmpty() ) throw new IllegalArgumentException( "JDBC " +
+                "URL must not be empty" );
+
+        final String baseUrl = jdbcUrl.substring( Driver.URL_PREFIX.length() );
+
+        if (baseUrl.isEmpty()) throw new IllegalArgumentException( "JDBC URL " +
+                "must specify a server" );
+
+        /* When we chop off the URL_PREFIX and the next item is a http(s)://
+           protocol indicator, we can be left with an extra colon that will
+           cause the parsing of the http based url to fail. */
+        if ( baseUrl.startsWith(":http") ) {
+            return baseUrl.substring(1);
+        } else {
+            return baseUrl;
+        }
     }
 
     private QueryExecutor createExecutor( String connectionUrl, String user, String password,
