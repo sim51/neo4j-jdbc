@@ -14,10 +14,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ObjectNode;
 import org.restlet.Response;
 import org.restlet.data.CharacterSet;
-import org.restlet.data.MediaType;
 import org.restlet.representation.Representation;
-import org.restlet.representation.Variant;
-import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 import org.restlet.routing.Filter;
 
@@ -95,7 +92,7 @@ public class TransactionalQueryExecutor implements QueryExecutor
     {
         final ObjectNode requestData = mapper.createObjectNode();
         requestData.put( "statements", Statement.toJson( mapper, data ) );
-        resource.post( toRepresentation( requestData, resource ) );
+        resource.post( Resources.toRepresentation( requestData, resource ) );
         Response response = resource.getResponse();
         response.getEntity().setCharacterSet( CharacterSet.UTF_8 );
 //        dump( response );
@@ -106,16 +103,6 @@ public class TransactionalQueryExecutor implements QueryExecutor
     {
         System.out.println( "response.getText() = " + response.getAttributes() );
         System.out.println( "response.getText() = " + response.getEntityAsText() );
-    }
-
-    private Representation toRepresentation( ObjectNode requestData, ClientResource requestResource )
-    {
-        final String jsonString = toString( requestData );
-        final Variant variant = new Variant( MediaType.APPLICATION_JSON );
-        variant.setCharacterSet( CharacterSet.UTF_8 );
-        Representation representation = requestResource.toRepresentation( jsonString, variant );
-        representation.setCharacterSet( CharacterSet.UTF_8 );
-        return representation;
     }
 
     public Iterator<ExecutionResult> commit( Statement... statements ) throws SQLException
@@ -166,15 +153,6 @@ public class TransactionalQueryExecutor implements QueryExecutor
         {
             throw new RuntimeException( "Error accessing response reader", e );
         }
-    }
-
-    private String toString( Object value )
-    {
-        if ( value == null )
-        {
-            return null;
-        }
-        return value.toString();
     }
 
     public void rollback() throws SQLException

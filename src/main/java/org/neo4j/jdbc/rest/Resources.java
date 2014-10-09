@@ -12,6 +12,7 @@ import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ObjectNode;
 import org.codehaus.jackson.type.TypeReference;
 import org.restlet.Client;
 import org.restlet.Context;
@@ -56,6 +57,30 @@ public class Resources
         context.getLogger().setLevel( Level.WARNING );
         clientInfo.setAcceptedMediaTypes( streamingJson() );
         clientInfo.setAcceptedCharacterSets( charsetUtf8() );
+    }
+
+    static Representation toRepresentation( ObjectNode requestData, ClientResource requestResource )
+    {
+        try
+        {
+            final String jsonString = toString( requestData );
+            final Variant variant = new Variant( MediaType.APPLICATION_JSON );
+            variant.setCharacterSet( CharacterSet.UTF_8 );
+            Representation representation = requestResource.toRepresentation( jsonString, variant );
+            representation.setCharacterSet( CharacterSet.UTF_8 );
+            return representation;
+        } catch (IOException ioe) {
+            throw new RuntimeException( "Cant convert to representation with UTF-8" , ioe);
+        }
+    }
+
+    private static String toString( Object value )
+    {
+        if ( value == null )
+        {
+            return null;
+        }
+        return value.toString();
     }
 
     private Context createContext()
@@ -151,6 +176,14 @@ public class Resources
             getClientInfo().setAgent( userAgent );
         }
 
+        @Override
+        public final Representation toRepresentation( Object source, Variant target ) throws IOException
+        {
+            target.setCharacterSet( CharacterSet.UTF_8 );
+            Representation representation = super.toRepresentation( source, target );
+            representation.setCharacterSet( CharacterSet.UTF_8 );
+            return representation;
+        }
     }
 
     public class DiscoveryClientResource extends Neo4jClientResource
@@ -251,15 +284,6 @@ public class Resources
             return transactionPath;
         }
 
-        @Override
-        public Representation toRepresentation( Object source, Variant target )
-        {
-            target.setCharacterSet( CharacterSet.UTF_8 );
-            Representation representation = super.toRepresentation( source, target );
-            representation.setCharacterSet( CharacterSet.UTF_8 );
-            return representation;
-        }
-
     }
 
 
@@ -272,15 +296,6 @@ public class Resources
             super( context, cypherPath, userAgent );
             this.mapper = mapper;
             configureClient( context, getClientInfo() );
-        }
-
-        @Override
-        public Representation toRepresentation( Object source, Variant target )
-        {
-            target.setCharacterSet( CharacterSet.UTF_8 );
-            Representation representation = super.toRepresentation( source, target );
-            representation.setCharacterSet( CharacterSet.UTF_8 );
-            return representation;
         }
 
         @Override
@@ -332,15 +347,6 @@ public class Resources
         public TransactionClientResource subResource( String segment )
         {
             return new TransactionClientResource( getContext(), getReference().clone().addSegment( segment ), userAgent );
-        }
-
-        @Override
-        public Representation toRepresentation( Object source, Variant target )
-        {
-            target.setCharacterSet( CharacterSet.UTF_8 );
-            Representation representation = super.toRepresentation( source, target );
-            representation.setCharacterSet( CharacterSet.UTF_8 );
-            return representation;
         }
 
         @Override
