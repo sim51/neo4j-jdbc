@@ -6,11 +6,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 import org.neo4j.jdbc.Databases;
 import org.neo4j.jdbc.QueryExecutor;
 import org.neo4j.test.ImpermanentGraphDatabase;
+import org.neo4j.test.TestGraphDatabaseFactory;
 
 /**
  * @author mh
@@ -27,7 +29,7 @@ public class EmbeddedDatabases implements Databases
                     @Override
                     public GraphDatabaseService create( String name, Properties properties )
                     {
-                        return new ImpermanentGraphDatabase();
+                        return withShutdownHook( defaultImpermanentDb() );
                     }
                 }, instance
             {
@@ -41,15 +43,12 @@ public class EmbeddedDatabases implements Databases
                 @Override
                 public GraphDatabaseService create( String name, Properties properties )
                 {
+                    GraphDatabaseBuilder builder = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder( name );
                     if ( isReadOnly( properties ) )
                     {
-                        return new GraphDatabaseFactory().newEmbeddedDatabaseBuilder( name ).setConfig(
-                                GraphDatabaseSettings.read_only, "true" ).newGraphDatabase();
+                         builder.setConfig( GraphDatabaseSettings.read_only, "true" );
                     }
-                    else
-                    {
-                        return new GraphDatabaseFactory().newEmbeddedDatabase( name );
-                    }
+                    return withShutdownHook( builder.newGraphDatabase() );
                 }
             };
 
@@ -97,9 +96,21 @@ public class EmbeddedDatabases implements Databases
         }
     }
 
-    private GraphDatabaseService defaultImpermanentDb()
+    private static GraphDatabaseService defaultImpermanentDb()
     {
-        return new ImpermanentGraphDatabase();
+        return new TestGraphDatabaseFactory().newImpermanentDatabase();
+    }
+
+    private static GraphDatabaseService withShutdownHook( final GraphDatabaseService db )
+    {
+        Runtime.getRuntime().addShutdownHook( new Thread(  ) {
+            @Override
+            public void run()
+            {
+                db.shutdown();
+            }
+        });
+        return db;
     }
 
     public QueryExecutor createExecutor( String connectionUrl, Properties properties )
