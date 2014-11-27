@@ -147,7 +147,7 @@ public class Driver implements java.sql.Driver
         }
         catch ( Throwable e )
         {
-            log.warn( "Embedded Neo4j support not enabled " + e.getMessage() );
+            log.debug( "Embedded Neo4j support not enabled " + e.getMessage() );
             return null;
         }
     }
