@@ -71,44 +71,49 @@ public class Neo4jStatement
     @Override
     public int getMaxFieldSize() throws SQLException
     {
-        return 0;
+        throw unsupported( "getMaxFieldSize" );
     }
 
     @Override
     public void setMaxFieldSize( int i ) throws SQLException
     {
+        throw unsupported( "setMaxFieldSize " );
     }
 
     @Override
     public int getMaxRows() throws SQLException
     {
-        return 0;
+        throw unsupported( "getMaxRows" );
     }
 
     @Override
     public void setMaxRows( int i ) throws SQLException
     {
+        throw unsupported( "setMaxRows" );
     }
 
     @Override
     public void setEscapeProcessing( boolean b ) throws SQLException
     {
+        throw unsupported( "setEscapeProcessing" );
     }
 
     @Override
     public int getQueryTimeout() throws SQLException
     {
-        return 0;
+        throw unsupported( "getQueryTimeout" );
     }
 
     @Override
     public void setQueryTimeout( int i ) throws SQLException
     {
+        throw unsupported( "setQueryTimeout" );
     }
 
     @Override
     public void cancel() throws SQLException
     {
+        throw unsupported( "cancel" );
     }
 
     @Override
@@ -126,6 +131,7 @@ public class Neo4jStatement
     @Override
     public void setCursorName( String s ) throws SQLException
     {
+        throw unsupported( "setCursorName" );
     }
 
     @Override
@@ -167,7 +173,7 @@ public class Neo4jStatement
     @Override
     public int getUpdateCount() throws SQLException
     {
-        return -1;
+        throw unsupported( "getUpdateCount" );
     }
 
     @Override
@@ -180,29 +186,31 @@ public class Neo4jStatement
     @Override
     public void setFetchDirection( int i ) throws SQLException
     {
+        throw unsupported( "setFetchDirection" );
     }
 
     @Override
     public int getFetchDirection() throws SQLException
     {
-        return 0;
+        throw unsupported( "getFetchDirection" );
     }
 
     @Override
     public void setFetchSize( int i ) throws SQLException
     {
+        throw unsupported( "setFetchSize" );
     }
 
     @Override
     public int getFetchSize() throws SQLException
     {
-        return 0;
+        throw unsupported( "getFetchSize" );
     }
 
     @Override
     public int getResultSetConcurrency() throws SQLException
     {
-        return 0;
+        throw unsupported( "getResultSetConcurrency" );
     }
 
     @Override
@@ -214,17 +222,19 @@ public class Neo4jStatement
     @Override
     public void addBatch( String s ) throws SQLException
     {
+        throw unsupported( "addBatch" );
     }
 
     @Override
     public void clearBatch() throws SQLException
     {
+        throw unsupported( "clearBatch" );
     }
 
     @Override
     public int[] executeBatch() throws SQLException
     {
-        return new int[0];
+        throw unsupported( "executeBatch" );
     }
 
     @Override
@@ -296,6 +306,7 @@ public class Neo4jStatement
     @Override
     public void setPoolable( boolean b ) throws SQLException
     {
+        throw unsupported( "setPoolable" );
     }
 
     @Override
@@ -318,10 +329,16 @@ public class Neo4jStatement
 
     public void closeOnCompletion() throws SQLException
     {
+        throw unsupported( "closeOnCompletion" );
     }
 
     public boolean isCloseOnCompletion() throws SQLException
     {
         return false;
+    }
+
+    private static UnsupportedOperationException unsupported( String methodName )
+    {
+        return new UnsupportedOperationException( methodName + " is not supported by Neo4jStatement." );
     }
 }

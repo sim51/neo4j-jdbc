@@ -24,6 +24,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -67,14 +68,14 @@ public class Neo4jStatementTest extends Neo4jJdbcTest
         assertEquals( nodeId, ((Number) rs.getObject( "id" )).intValue() );
         assertEquals( nodeId, rs.getLong( "id" ) );
         assertEquals( nodeId, ((Number) rs.getObject( 1 )).intValue() );
-        assertEquals( nodeId, rs.getLong( 1 ) );
+        assertEquals(nodeId, rs.getLong(1));
         assertFalse( rs.next() );
     }
 
     @Test(expected = SQLException.class)
     public void testPreparedStatementMissingParameter() throws Exception
     {
-        final PreparedStatement ps = conn.prepareStatement( "start n=node({1}) return ID(n) as id" );
+        final PreparedStatement ps = conn.prepareStatement("start n=node({1}) return ID(n) as id");
         final ResultSet rs = ps.executeQuery();
         rs.next();
     }
@@ -90,14 +91,14 @@ public class Neo4jStatementTest extends Neo4jJdbcTest
         assertEquals( nodeId, rs.getLong( "id" ) );
         assertEquals( nodeId, ((Number) rs.getObject( 1 )).intValue() );
         assertEquals( nodeId, rs.getLong( 1 ) );
-        assertFalse( rs.next() );
+        assertFalse(rs.next());
     }
 
     @Test
     public void testCreateNodeStatement() throws Exception
     {
         final PreparedStatement ps = conn.prepareStatement( "create (n:User {name:{1}})" );
-        ps.setString( 1, "test" );
+        ps.setString(1, "test");
         // TODO int count = ps.executeUpdate();
         int count = 0;
         ps.executeUpdate();
@@ -108,14 +109,14 @@ public class Neo4jStatementTest extends Neo4jJdbcTest
             count++;
         }
         done();
-        assertEquals( 1, count );
+        assertEquals(1, count);
     }
 
     @Test
     public void testCreateNodeStatementWithMapParam() throws Exception
     {
         final PreparedStatement ps = conn.prepareStatement( "create (n:User {1})" );
-        ps.setObject( 1, map( "name", "test" ) );
+        ps.setObject(1, map("name", "test"));
         // TODO int count = ps.executeUpdate();
         int count = 0;
         ps.executeUpdate();
@@ -132,8 +133,8 @@ public class Neo4jStatementTest extends Neo4jJdbcTest
     @Test(expected = SQLException.class)
     public void testCreateOnReadonlyConnection() throws Exception
     {
-        conn.setReadOnly( true );
-        conn.createStatement().executeUpdate( "create (n {name:{1}})" );
+        conn.setReadOnly(true);
+        conn.createStatement().executeUpdate("create (n {name:{1}})");
     }
 
     @Test(expected = SQLDataException.class)
@@ -141,8 +142,8 @@ public class Neo4jStatementTest extends Neo4jJdbcTest
     {
         final ResultSet rs = conn.createStatement().executeQuery( nodeByIdQuery( nodeId ) );
         assertTrue( rs.next() );
-        assertEquals( nodeId, rs.getObject( 0 ) );
-        assertFalse( rs.next() );
+        assertEquals(nodeId, rs.getObject(0));
+        assertFalse(rs.next());
     }
 
     @Test(expected = SQLDataException.class)
@@ -150,7 +151,7 @@ public class Neo4jStatementTest extends Neo4jJdbcTest
     {
         final ResultSet rs = conn.createStatement().executeQuery( nodeByIdQuery( nodeId ) );
         rs.next();
-        rs.getObject( 2 );
+        rs.getObject(2);
     }
 
     @Test(expected = SQLException.class)
@@ -160,4 +161,125 @@ public class Neo4jStatementTest extends Neo4jJdbcTest
         rs.next();
         rs.getObject( "foo" );
     }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetMaxFieldSizeIsUnsupported() throws Exception
+    {
+        conn.createStatement().getMaxFieldSize();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testSetMaxFieldSizeIsUnsupported() throws Exception
+    {
+        conn.createStatement().setMaxFieldSize(1);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetMaxRowsIsUnsupported() throws Exception
+    {
+        conn.createStatement().getMaxRows();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testSetMaxRowsIsUnsupported() throws Exception
+    {
+        conn.createStatement().setMaxRows(1);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testSetEscapeProcessingIsUnsupported() throws Exception
+    {
+        conn.createStatement().setEscapeProcessing(false);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetQueryTimeoutIsUnsupported() throws Exception
+    {
+        conn.createStatement().getQueryTimeout();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testSetQueryTimeoutIsUnsupported() throws Exception
+    {
+        conn.createStatement().setQueryTimeout(0);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testCancelIsUnsupported() throws Exception
+    {
+        conn.createStatement().cancel();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testSetCursorNameIsUnsupported() throws Exception
+    {
+        conn.createStatement().setCursorName("shouldNotWork");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetUpdateCountIsUnsupported() throws Exception
+    {
+        conn.createStatement().getUpdateCount();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testSetFetchDirectionIsUnsupported() throws Exception
+    {
+        conn.createStatement().setFetchDirection(ResultSet.FETCH_FORWARD);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetFetchDirectionIsUnsupported() throws Exception
+    {
+        conn.createStatement().getFetchDirection();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testSetFetchSizeIsUnsupported() throws Exception
+    {
+        conn.createStatement().setFetchSize(50);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetFetchSizeIsUnsupported() throws Exception
+    {
+        conn.createStatement().getFetchSize();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetResultSetConcurrencyIsUnsupported() throws Exception
+    {
+        conn.createStatement().getResultSetConcurrency();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAddBatchIsUnsupported() throws Exception
+    {
+        conn.createStatement().addBatch("Doesn't work'");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testClearBatchIsUnsupported() throws Exception
+    {
+        conn.createStatement().clearBatch();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testExecuteBatchIsUnsupported() throws Exception
+    {
+        conn.createStatement().executeBatch();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testSetPoolableIsUnsupported() throws Exception
+    {
+        conn.createStatement().setPoolable( false );
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testCloseOnCompletionIsUnsupported() throws Exception
+    {
+        conn.createStatement().closeOnCompletion();
+    }
+
 }
