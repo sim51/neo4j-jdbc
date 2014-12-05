@@ -20,6 +20,7 @@
 
 package org.neo4j.jdbc;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -42,7 +43,6 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.kernel.KernelData;
 import org.neo4j.server.CommunityNeoServer;
-import org.neo4j.server.web.WebServer;
 import org.neo4j.test.ImpermanentGraphDatabase;
 import org.neo4j.test.TestGraphDatabaseFactory;
 
@@ -119,11 +119,35 @@ public abstract class Neo4jJdbcTest
                 props.put( "db", gdb );
                 return driver.connect( "jdbc:neo4j:instance:db", props );
             case server:
+<<<<<<< HEAD
+=======
+                if ( webServer == null )
+                {
+                    webServer = TestServer.startWebServer( TestServer.PORT, false );
+                    updateGdbFromServer();
+                }
+>>>>>>> Update to Neo4j 2.2.M1
                 props.setProperty( Driver.LEGACY, "true" );
                 return driver.connect( "jdbc:neo4j://localhost:" + TestServer.PORT, props );
             case server_tx:
+<<<<<<< HEAD
                 return driver.connect( "jdbc:neo4j://localhost:" + TestServer.PORT, props );
             case server_auth:
+=======
+                if ( webServer == null )
+                {
+                    webServer = TestServer.startWebServer( TestServer.PORT, false );
+                    updateGdbFromServer();
+                }
+                conn = driver.connect( "jdbc:neo4j://localhost:" + TestServer.PORT, props );
+                break;
+            case server_auth:
+                if ( webServer == null )
+                {
+                    webServer = TestServer.startWebServer( TestServer.PORT, true );
+                    updateGdbFromServer();
+                }
+>>>>>>> Update to Neo4j 2.2.M1
                 props.put( Driver.USER, TestAuthenticationFilter.USER );
                 props.put( Driver.PASSWORD, TestAuthenticationFilter.PASSWORD );
                 props.setProperty( Driver.LEGACY, "true" );
@@ -151,6 +175,12 @@ public abstract class Neo4jJdbcTest
             default:
                 throw new IllegalStateException( "Unknown mode "+ mode );
         }
+    }
+
+    private void updateGdbFromServer()
+    {
+        if (gdb !=null ) { gdb.shutdown(); }
+        gdb = (ImpermanentGraphDatabase) webServer.getDatabase().getGraph();
     }
 
 
