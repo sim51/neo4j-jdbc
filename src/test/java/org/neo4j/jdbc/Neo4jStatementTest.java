@@ -165,4 +165,9 @@ public class Neo4jStatementTest extends Neo4jJdbcTest
     public void testGetFetchDirectionIsUnknown() throws Exception {
         assertEquals(ResultSet.FETCH_UNKNOWN, conn.createStatement().getFetchDirection());
     }
+
+    @Test
+    public void testGetResultSetConcurrencyIsReadOnly() throws Exception {
+        assertEquals(ResultSet.CONCUR_READ_ONLY, conn.createStatement().getResultSetConcurrency());
+    }
 }

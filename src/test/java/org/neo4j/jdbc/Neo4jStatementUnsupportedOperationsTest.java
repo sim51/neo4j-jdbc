@@ -112,12 +112,6 @@ public class Neo4jStatementUnsupportedOperationsTest extends Neo4jJdbcTest
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void testGetResultSetConcurrencyIsUnsupported() throws Exception
-    {
-        conn.createStatement().getResultSetConcurrency();
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
     public void testAddBatchIsUnsupported() throws Exception
     {
         conn.createStatement().addBatch( "Does not work" );

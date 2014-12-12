@@ -212,7 +212,7 @@ public class Neo4jStatement
     @Override
     public int getResultSetConcurrency() throws SQLException
     {
-        throw unsupported( "getResultSetConcurrency" );
+        return ResultSet.CONCUR_READ_ONLY;
     }
 
     @Override
