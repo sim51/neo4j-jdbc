@@ -22,6 +22,7 @@ package org.neo4j.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 
 import org.junit.Test;
 
@@ -33,109 +34,109 @@ public class Neo4jStatementUnsupportedOperationsTest extends Neo4jJdbcTest
         super( mode );
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = SQLFeatureNotSupportedException.class)
     public void testGetMaxFieldSizeIsUnsupported() throws Exception
     {
         conn.createStatement().getMaxFieldSize();
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = SQLFeatureNotSupportedException.class)
     public void testSetMaxFieldSizeIsUnsupported() throws Exception
     {
         conn.createStatement().setMaxFieldSize( 1 );
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = SQLFeatureNotSupportedException.class)
     public void testGetMaxRowsIsUnsupported() throws Exception
     {
         conn.createStatement().getMaxRows();
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = SQLFeatureNotSupportedException.class)
     public void testSetMaxRowsIsUnsupported() throws Exception
     {
         conn.createStatement().setMaxRows( 1 );
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = SQLFeatureNotSupportedException.class)
     public void testSetEscapeProcessingIsUnsupported() throws Exception
     {
         conn.createStatement().setEscapeProcessing( false );
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = SQLFeatureNotSupportedException.class)
     public void testGetQueryTimeoutIsUnsupported() throws Exception
     {
         conn.createStatement().getQueryTimeout();
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = SQLFeatureNotSupportedException.class)
     public void testSetQueryTimeoutIsUnsupported() throws Exception
     {
         conn.createStatement().setQueryTimeout( 0 );
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = SQLFeatureNotSupportedException.class)
     public void testCancelIsUnsupported() throws Exception
     {
         conn.createStatement().cancel();
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = SQLFeatureNotSupportedException.class)
     public void testSetCursorNameIsUnsupported() throws Exception
     {
         conn.createStatement().setCursorName( "shouldNotWork" );
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = SQLFeatureNotSupportedException.class)
     public void testGetUpdateCountIsUnsupported() throws Exception
     {
         conn.createStatement().getUpdateCount();
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = SQLFeatureNotSupportedException.class)
     public void testSetFetchDirectionIsUnsupported() throws Exception
     {
         conn.createStatement().setFetchDirection(ResultSet.FETCH_FORWARD);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = SQLFeatureNotSupportedException.class)
     public void testSetFetchSizeIsUnsupported() throws Exception
     {
         conn.createStatement().setFetchSize( 50 );
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = SQLFeatureNotSupportedException.class)
     public void testGetFetchSizeIsUnsupported() throws Exception
     {
         conn.createStatement().getFetchSize();
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = SQLFeatureNotSupportedException.class)
     public void testAddBatchIsUnsupported() throws Exception
     {
         conn.createStatement().addBatch( "Does not work" );
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = SQLFeatureNotSupportedException.class)
     public void testClearBatchIsUnsupported() throws Exception
     {
         conn.createStatement().clearBatch();
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = SQLFeatureNotSupportedException.class)
     public void testExecuteBatchIsUnsupported() throws Exception
     {
         conn.createStatement().executeBatch();
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = SQLFeatureNotSupportedException.class)
     public void testSetPoolableIsUnsupported() throws Exception
     {
         conn.createStatement().setPoolable( false );
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = SQLFeatureNotSupportedException.class)
     public void testCloseOnCompletionIsUnsupported() throws Exception
     {
         conn.createStatement().closeOnCompletion();

@@ -23,6 +23,7 @@ package org.neo4j.jdbc;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.Collections;
@@ -339,8 +340,8 @@ public class Neo4jStatement
         return false;
     }
 
-    private static UnsupportedOperationException unsupported( String methodName )
+    private static SQLFeatureNotSupportedException unsupported( String methodName )
     {
-        return new UnsupportedOperationException( methodName + " is not supported by Neo4jStatement." );
+        return new SQLFeatureNotSupportedException( methodName + " is not supported by Neo4jStatement." );
     }
 }
