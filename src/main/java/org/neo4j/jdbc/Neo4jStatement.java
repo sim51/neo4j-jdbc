@@ -53,6 +53,7 @@ public class Neo4jStatement
     public int executeUpdate( String s ) throws SQLException
     {
         execute( s );
+        // TODO return actual update count
         return 0;
     }
 
@@ -173,6 +174,7 @@ public class Neo4jStatement
     @Override
     public int getUpdateCount() throws SQLException
     {
+        // TODO return actual update count
         throw unsupported( "getUpdateCount" );
     }
 
