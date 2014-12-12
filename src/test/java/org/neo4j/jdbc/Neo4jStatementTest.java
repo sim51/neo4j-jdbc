@@ -160,4 +160,9 @@ public class Neo4jStatementTest extends Neo4jJdbcTest
         rs.next();
         rs.getObject( "foo" );
     }
+
+    @Test
+    public void testGetFetchDirectionIsUnknown() throws Exception {
+        assertEquals(ResultSet.FETCH_UNKNOWN, conn.createStatement().getFetchDirection());
+    }
 }

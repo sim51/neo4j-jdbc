@@ -100,12 +100,6 @@ public class Neo4jStatementUnsupportedOperationsTest extends Neo4jJdbcTest
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void testGetFetchDirectionIsUnsupported() throws Exception
-    {
-        conn.createStatement().getFetchDirection();
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
     public void testSetFetchSizeIsUnsupported() throws Exception
     {
         conn.createStatement().setFetchSize( 50 );

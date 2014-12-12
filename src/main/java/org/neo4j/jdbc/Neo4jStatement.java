@@ -194,7 +194,7 @@ public class Neo4jStatement
     @Override
     public int getFetchDirection() throws SQLException
     {
-        throw unsupported( "getFetchDirection" );
+        return ResultSet.FETCH_UNKNOWN;
     }
 
     @Override
