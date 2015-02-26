@@ -375,7 +375,7 @@ public class Neo4jConnection extends AbstractConnection
         {
             if ( log.isDebugEnabled() )
             {
-                log.info( "Executing query: " + query + "\n with params " + parameters );
+                log.debug( "Executing query: " + query + "\n with params " + parameters );
             }
             final ExecutionResult result = queryExecutor.executeQuery( query, parameters, autoCommit );
             return debug( toResultSet( result ) );
