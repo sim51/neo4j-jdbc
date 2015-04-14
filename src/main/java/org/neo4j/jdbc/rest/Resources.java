@@ -219,14 +219,14 @@ public class Resources
             version = textField( serverData, "neo4j_version" );
 
             cypherPath = obtainCypherPath( serverData );
-            labelPath = dataUri + "/labels"; // serverData.get("labels").asText(); // /db/data/labels
+            labelPath = serverData.get("node_labels").asText(); // /db/data/labels
             relationshipTypesPath = serverData.get( "relationship_types" ).asText(); // /db/data/relationship/types
-            propertyKeysPath = dataUri + "/propertykeys"; // serverData.get("property_keys").asText(); //
+            propertyKeysPath = dataUri + "propertykeys"; // serverData.get("property_keys").asText(); //
             // /db/data/relationship/types
             transactionPath = textField( serverData, "transaction" );
             if ( transactionPath == null && (version.startsWith( "2" ) || version.equals( "1.9.M02-1083-g0593b83" )) )
             {
-                transactionPath = dataUri + "/transaction";
+                transactionPath = dataUri + "transaction";
             }
         }
 

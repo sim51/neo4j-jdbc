@@ -20,14 +20,6 @@
 
 package org.neo4j.jdbc;
 
-import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Properties;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -35,7 +27,6 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -45,6 +36,13 @@ import org.neo4j.kernel.KernelData;
 import org.neo4j.server.CommunityNeoServer;
 import org.neo4j.test.ImpermanentGraphDatabase;
 import org.neo4j.test.TestGraphDatabaseFactory;
+
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Properties;
 
 /**
  * @author mh
@@ -99,13 +97,7 @@ public abstract class Neo4jJdbcTest
     public Neo4jJdbcTest( Mode mode ) throws SQLException
     {
         this.mode = mode;
-<<<<<<< HEAD
-=======
-        final Driver driver = new Driver();
-        final Properties props = new Properties();
->>>>>>> Update to Neo4j 2.2-SNAPSHOT
         gdb.cleanContent();
-        startServer( mode );
         driver = new Driver();
         conn = connect( mode );
     }
@@ -119,62 +111,32 @@ public abstract class Neo4jJdbcTest
                 props.put( "db", gdb );
                 return driver.connect( "jdbc:neo4j:instance:db", props );
             case server:
-<<<<<<< HEAD
-=======
                 if ( webServer == null )
                 {
                     webServer = TestServer.startWebServer( TestServer.PORT, false );
                     updateGdbFromServer();
                 }
->>>>>>> Update to Neo4j 2.2.M1
                 props.setProperty( Driver.LEGACY, "true" );
                 return driver.connect( "jdbc:neo4j://localhost:" + TestServer.PORT, props );
             case server_tx:
-<<<<<<< HEAD
-                return driver.connect( "jdbc:neo4j://localhost:" + TestServer.PORT, props );
-            case server_auth:
-=======
                 if ( webServer == null )
                 {
                     webServer = TestServer.startWebServer( TestServer.PORT, false );
                     updateGdbFromServer();
                 }
-                conn = driver.connect( "jdbc:neo4j://localhost:" + TestServer.PORT, props );
-                break;
+                return driver.connect( "jdbc:neo4j://localhost:" + TestServer.PORT, props );
             case server_auth:
                 if ( webServer == null )
                 {
                     webServer = TestServer.startWebServer( TestServer.PORT, true );
                     updateGdbFromServer();
                 }
->>>>>>> Update to Neo4j 2.2.M1
                 props.put( Driver.USER, TestAuthenticationFilter.USER );
                 props.put( Driver.PASSWORD, TestAuthenticationFilter.PASSWORD );
                 props.setProperty( Driver.LEGACY, "true" );
                 return driver.connect( "jdbc:neo4j://localhost:" + TestServer.PORT, props );
         }
         throw new IllegalStateException( "Unknown mode "+ mode );
-    }
-
-    private void startServer( Mode mode )
-    {
-        if (webServer != null) return;
-        switch ( mode )
-        {
-            case embedded:
-                break;
-            case server:
-                webServer = TestServer.startWebServer( gdb, TestServer.PORT, false );
-                break;
-            case server_tx:
-                webServer = TestServer.startWebServer( gdb, TestServer.PORT, false );
-                break;
-            case server_auth:
-                webServer = TestServer.startWebServer( gdb, TestServer.PORT, true );
-                break;
-            default:
-                throw new IllegalStateException( "Unknown mode "+ mode );
-        }
     }
 
     private void updateGdbFromServer()

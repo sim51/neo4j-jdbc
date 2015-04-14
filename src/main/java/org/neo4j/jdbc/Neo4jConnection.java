@@ -20,24 +20,6 @@
 
 package org.neo4j.jdbc;
 
-<<<<<<< HEAD
-=======
-import java.io.IOException;
-import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.SQLWarning;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.logging.Level;
-
->>>>>>> Update to Neo4j 2.2-SNAPSHOT
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.neo4j.cypherdsl.CypherQuery;
@@ -53,8 +35,18 @@ import org.restlet.Context;
 import org.restlet.data.Protocol;
 
 import java.io.IOException;
-import java.sql.*;
-import java.util.*;
+import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Implementation of Connection that delegates to the Neo4j REST API and sends queries as Cypher requests

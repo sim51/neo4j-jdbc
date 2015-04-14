@@ -50,14 +50,9 @@
             <url>http://maven.restlet.org</url>
         </repository>
         <repository>
-            <id>neo4j-snapshots</id>
-            <name>Neo4j Snapshots</name>
-            <url>http://m2.neo4j.org/snapshots</url>
-        </repository>
-        <repository>
             <id>neo4j-releases</id>
             <name>Neo4j Snapshots</name>
-            <url>http://m2.neo4j.org/releases</url>
+            <url>http://m2.neo4j.org/content/repositories/releases/</url>
         </repository>
     </repositories>
 
@@ -171,8 +166,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.1</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -252,12 +247,6 @@
       <uniqueVersion>false</uniqueVersion>
       <url>http://m2.neo4j.org/content/repositories/releases</url>
     </repository>
-    <snapshotRepository>
-      <id>snapshots@repo.neo4j.org</id>
-      <name>snapshots@repo.neo4j.org</name>
-      <uniqueVersion>false</uniqueVersion>
-      <url>http://m2.neo4j.org/content/repositories/snapshots</url>
-    </snapshotRepository>
   </distributionManagement>
 
 </project>
