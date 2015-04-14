@@ -55,6 +55,8 @@ import org.neo4j.test.TestGraphDatabaseFactory;
 public abstract class Neo4jJdbcTest
 {
 
+    private final Driver driver;
+
     protected static String nodeByIdQuery( long nodeId )
     {
         return "start n=node(" + nodeId + ") return ID(n) as id";
@@ -96,40 +98,52 @@ public abstract class Neo4jJdbcTest
     public Neo4jJdbcTest( Mode mode ) throws SQLException
     {
         this.mode = mode;
-        final Driver driver = new Driver();
-        final Properties props = new Properties();
         gdb.cleanContent();
+        startServer( mode );
+        driver = new Driver();
+        conn = connect( mode );
+    }
+
+    protected Neo4jConnection connect( Mode mode ) throws SQLException
+    {
+        final Properties props = new Properties();
         switch ( mode )
         {
             case embedded:
                 props.put( "db", gdb );
-                conn = driver.connect( "jdbc:neo4j:instance:db", props );
-                break;
+                return driver.connect( "jdbc:neo4j:instance:db", props );
             case server:
-                if ( webServer == null )
-                {
-                    webServer = TestServer.startWebServer( gdb, TestServer.PORT, false );
-                }
                 props.setProperty( Driver.LEGACY, "true" );
-                conn = driver.connect( "jdbc:neo4j://localhost:" + TestServer.PORT, props );
-                break;
+                return driver.connect( "jdbc:neo4j://localhost:" + TestServer.PORT, props );
             case server_tx:
-                if ( webServer == null )
-                {
-                    webServer = TestServer.startWebServer( gdb, TestServer.PORT, false );
-                }
-                conn = driver.connect( "jdbc:neo4j://localhost:" + TestServer.PORT, props );
-                break;
+                return driver.connect( "jdbc:neo4j://localhost:" + TestServer.PORT, props );
             case server_auth:
-                if ( webServer == null )
-                {
-                    webServer = TestServer.startWebServer( gdb, TestServer.PORT, true );
-                }
                 props.put( Driver.USER, TestAuthenticationFilter.USER );
                 props.put( Driver.PASSWORD, TestAuthenticationFilter.PASSWORD );
                 props.setProperty( Driver.LEGACY, "true" );
-                conn = driver.connect( "jdbc:neo4j://localhost:" + TestServer.PORT, props );
+                return driver.connect( "jdbc:neo4j://localhost:" + TestServer.PORT, props );
+        }
+        throw new IllegalStateException( "Unknown mode "+ mode );
+    }
+
+    private void startServer( Mode mode )
+    {
+        if (webServer != null) return;
+        switch ( mode )
+        {
+            case embedded:
                 break;
+            case server:
+                webServer = TestServer.startWebServer( gdb, TestServer.PORT, false );
+                break;
+            case server_tx:
+                webServer = TestServer.startWebServer( gdb, TestServer.PORT, false );
+                break;
+            case server_auth:
+                webServer = TestServer.startWebServer( gdb, TestServer.PORT, true );
+                break;
+            default:
+                throw new IllegalStateException( "Unknown mode "+ mode );
         }
     }
 
@@ -164,7 +178,7 @@ public abstract class Neo4jJdbcTest
     }
 
     @After
-    public void tearDown()
+    public void tearDown() throws Exception
     {
         try
         {
