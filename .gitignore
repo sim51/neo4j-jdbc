@@ -1,3 +1,6 @@
+.DS_Store
+neo4j-home
+data
 *.iml
 *.iws
 *.ipr
