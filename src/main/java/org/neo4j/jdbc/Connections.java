@@ -6,6 +6,7 @@ import java.util.Properties;
 import org.neo4j.jdbc.ext.DbVisualizerConnection;
 import org.neo4j.jdbc.ext.IntelliJConnection;
 import org.neo4j.jdbc.ext.LibreOfficeConnection;
+import org.neo4j.jdbc.ext.TableauConnection;
 
 /**
  * @author mh
@@ -50,6 +51,19 @@ public enum Connections
             {
                 return new DbVisualizerConnection( driver, url, p );
             }
+        }, Tableau()
+        {
+            @Override
+            protected boolean matches( Properties sysProps )
+            {
+                return sysProps.containsKey( TABLEAU );
+            }
+
+            @Override
+            protected Neo4jConnection doCreate( Driver driver, String url, Properties p ) throws SQLException
+            {
+                return new TableauConnection( driver, url, p );
+            }
         }, Default()
         {
             @Override
@@ -66,6 +80,7 @@ public enum Connections
         };
 
     public static final String DB_VIS = "dbvis.ScriptsTreeShowDetails";
+    public static final String TABLEAU = "tableau";
 
     protected abstract boolean matches( Properties sysProps );
 
