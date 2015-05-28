@@ -37,5 +37,6 @@ public class TableauConnectionTest extends Neo4jJdbcTest
         conn.createStatement().executeQuery("SELECT * FROM (   MATCH (p:Product) RETURN p.name ) TableauSQL");
         conn.createStatement().executeQuery("SELECT * FROM (   MATCH (p:Product) RETURN p.name ) Custom_SQL_Query");
         conn.createStatement().executeQuery("SELECT TableauSQL.name AS name FROM ( MATCH (t:Product) RETURN t.name as name ) TableauSQL LIMIT 10000");
+        conn.createStatement().executeQuery("SELECT 1 AS COL");
     }
 }

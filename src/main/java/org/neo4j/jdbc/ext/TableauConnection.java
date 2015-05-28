@@ -46,7 +46,21 @@ public class TableauConnection extends Neo4jConnection implements Connection {
     public ResultSet executeQuery(String query, Map<String, Object> parameters) throws SQLException {
 
         {
-            Pattern pattern = Pattern.compile("\\s*SELECT 1.*");
+            Pattern pattern = Pattern.compile("\\DROP TABLE.*");
+            Matcher matcher = pattern.matcher(query);
+            if (matcher.matches()) {
+                return new ResultSetBuilder().newResultSet(debug(this));
+            }
+        }
+        {
+            Pattern pattern = Pattern.compile("\\sCREATE LOCAL TEMPORARY TABLE.*");
+            Matcher matcher = pattern.matcher(query);
+            if (matcher.matches()) {
+                return new ResultSetBuilder().newResultSet(debug(this));
+            }
+        }
+        {
+            Pattern pattern = Pattern.compile("\\sSELECT 1.*");
             Matcher matcher = pattern.matcher(query);
             if (matcher.matches()) {
                 return new ResultSetBuilder().newResultSet(debug(this));

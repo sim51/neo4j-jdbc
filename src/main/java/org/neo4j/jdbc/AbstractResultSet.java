@@ -85,9 +85,26 @@ public abstract class AbstractResultSet implements ResultSet
         List<Neo4jColumnMetaData> result = new ArrayList<Neo4jColumnMetaData>( columns.size() );
         for ( String column : columns )
         {
-            result.add( new Neo4jColumnMetaData( column, "String", Types.VARCHAR ) );
+
+            result.add( this.getColumnMedata(column));
         }
         return result;
+    }
+
+    private Neo4jColumnMetaData getColumnMedata(String column) {
+        // split on camelCase syntax
+        String type = column.split("(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])")[0];
+        Neo4jColumnMetaData metadata;
+        switch (type) {
+            case "float": metadata = new Neo4jColumnMetaData( column, "Float", Types.FLOAT );
+                break;
+            case "int": metadata = new Neo4jColumnMetaData( column, "Integer", Types.BIGINT);
+                break;
+            case "bool": metadata = new Neo4jColumnMetaData( column, "Boolean", Types.BOOLEAN);
+                break;
+            default: metadata = new Neo4jColumnMetaData( column, "String", Types.VARCHAR );
+        }
+        return metadata;
     }
 
     private String[] extractColumnNames( List<Neo4jColumnMetaData> columns )
