@@ -20,16 +20,13 @@
 
 package org.neo4j.jdbc.ext;
 
-import org.neo4j.cypherdsl.grammar.ExecuteWithParameters;
-import org.neo4j.jdbc.Driver;
-import org.neo4j.jdbc.Neo4jConnection;
-import org.neo4j.jdbc.ResultSetBuilder;
+import org.neo4j.jdbc.*;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,44 +42,90 @@ public class TableauConnection extends Neo4jConnection implements Connection {
     @Override
     public ResultSet executeQuery(String query, Map<String, Object> parameters) throws SQLException {
 
-        {
-            Pattern pattern = Pattern.compile("\\DROP TABLE.*");
-            Matcher matcher = pattern.matcher(query);
-            if (matcher.matches()) {
-                return new ResultSetBuilder().newResultSet(debug(this));
-            }
-        }
-        {
-            Pattern pattern = Pattern.compile("\\sCREATE LOCAL TEMPORARY TABLE.*");
-            Matcher matcher = pattern.matcher(query);
-            if (matcher.matches()) {
-                return new ResultSetBuilder().newResultSet(debug(this));
-            }
-        }
-        {
-            Pattern pattern = Pattern.compile("\\sSELECT 1.*");
-            Matcher matcher = pattern.matcher(query);
-            if (matcher.matches()) {
-                return new ResultSetBuilder().newResultSet(debug(this));
-            }
-        }
+        String cql = query;
 
-        {
-            Pattern pattern = Pattern.compile("\\s*SELECT .* FROM \\((.*)\\) .* WHERE 1=0\\s*");
-            Matcher matcher = pattern.matcher(query);
-            if (matcher.matches()) {
-                return new ResultSetBuilder().newResultSet(debug(this));
-            }
-        }
-
-        //TODO: manage LIMIT on queries
-        Pattern pattern = Pattern.compile("\\s*SELECT .* FROM \\((.*)\\) .*");
+        Pattern pattern = Pattern.compile("\\s*DROP TABLE.*");
         Matcher matcher = pattern.matcher(query);
         if (matcher.matches()) {
-            query = matcher.group(1);
+            return new ResultSetBuilder().newResultSet(debug(this));
         }
 
-        return super.executeQuery(query, parameters);
+        pattern = Pattern.compile("\\s*CREATE LOCAL TEMPORARY TABLE.*");
+        matcher = pattern.matcher(query);
+        if (matcher.matches()) {
+            return new ResultSetBuilder().newResultSet(debug(this));
+        }
+
+        pattern = Pattern.compile("\\s*SELECT 1.*");
+        matcher = pattern.matcher(query);
+        if (matcher.matches()) {
+            return new ResultSetBuilder().newResultSet(debug(this));
+        }
+
+        pattern = Pattern.compile("\\s*SELECT .* FROM \\((.*)\\) .* WHERE 1=0.*");
+        matcher = pattern.matcher(query);
+        if (matcher.matches()) {
+            return new ResultSetBuilder().newResultSet(debug(this));
+        }
+
+        //TODO: manage tableau LIMIT on queries
+        pattern = Pattern.compile("\\s*SELECT .* FROM \\((.*)\\).*");
+        matcher = pattern.matcher(query);
+        if (matcher.matches()) {
+            cql = matcher.group(1);
+        }
+
+        cql = makeReturnParamOrder(cql);
+
+        // Adding original query as a comment (for debug)
+        cql += "//" + query.replaceAll("\\n", " ");
+
+        return super.executeQuery(cql, parameters);
+    }
+
+    private String makeReturnParamOrder(String query) throws SQLException {
+        String cql = query;
+
+        // Getting the RETURN part
+        Pattern pattern = Pattern.compile("(.*)RETURN(.*)(ORDER BY|SKIP|LIMIT)?(.*)");
+        Matcher matcher = pattern.matcher(query);
+        if (matcher.matches()) {
+
+            // Construct the columns list
+            List<String> columns = new ArrayList<String>();
+            String[] returnSeq = matcher.group(2).split(",");
+            for (String column : returnSeq) {
+                String[] varSeq = column.split("AS");
+                if (varSeq.length > 1) {
+                    columns.add(varSeq[1].trim());
+                } else {
+                    throw new SQLException("All return value must have an alias");
+                }
+            }
+
+            // Order the list
+            Collections.sort(columns);
+            String returnOrder = " RETURN ";
+            for (int i = 0; i < columns.size(); i++) {
+                returnOrder += columns.get(i);
+                if (i < (columns.size() - 1)) {
+                    returnOrder += ", ";
+                }
+            }
+
+            // Make a "with return" query
+            cql = matcher.group(1) + "WITH" + matcher.group(2) + returnOrder;
+            if(matcher.group(3) != null) {
+                cql += matcher.group(3);
+            }
+            if(matcher.group(4) != null) {
+                cql += matcher.group(4);
+            }
+        } else {
+            throw new SQLException("There is no RETURN in the query");
+        }
+
+        return cql;
     }
 
 }
