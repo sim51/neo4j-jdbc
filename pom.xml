@@ -5,13 +5,12 @@
     <version>2.2-SNAPSHOT</version>
     <name>Neo4j JDBC Driver</name>
     <description>Neo4j JDBC Driver</description>
-    <url>http://components.neo4j.org/${project.artifactId}/${project.version}</url>
+    <url>http://github.com/neo4j-contrib/neo4j-jdbc</url>
 
     <properties>
         <neo4j.version>2.2.1</neo4j.version>
         <bundle.namespace>org.neo4j.jdbc</bundle.namespace>
         <short-name>neo4j-jdbc</short-name>
-        <license-text.header>GPL-3-header.txt</license-text.header>
     </properties>
 
     <packaging>jar</packaging>
@@ -24,23 +23,15 @@
     </scm>
 
     <licenses>
-        <license>
-            <name>GNU General Public License, Version 3</name>
-            <url>http://www.gnu.org/licenses/gpl-3.0-standalone.html</url>
-            <comments>The software ("Software") developed and owned by Network Engine for
-                Objects in Lund AB (referred to in this notice as "Neo Technology") is
-                licensed under the GNU GENERAL PUBLIC LICENSE Version 3 to all third
-                parties and that license is included below.
-
-                However, if you have executed an End User Software License and Services
-                Agreement or an OEM Software License and Support Services Agreement, or
-                another commercial license agreement with Neo Technology or one of its
-                affiliates (each, a "Commercial Agreement"), the terms of the license in
-                such Commercial Agreement will supersede the GNU GENERAL PUBLIC LICENSE
-                Version 3 and you may use the Software solely pursuant to the terms of
-                the relevant Commercial Agreement.
-            </comments>
-        </license>
+      <license>
+        <name>The Apache Software License, Version 2.0</name>
+        <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        <comments>
+          Note that this license is for the project itself,
+          and not for its dependencies.
+          </comments>
+          <distribution>repo</distribution>
+      </license>
     </licenses>
 
     <repositories>
@@ -215,28 +206,45 @@
                     </archive>
                 </configuration>
             </plugin>
-
-            <!--
-                  <plugin>
-                      <artifactId>maven-assembly-plugin</artifactId>
-                      <executions>
-                          <execution>
-                              <id>docs-assembly</id>
-                              <phase>package</phase>
-                              <configuration>
-                                  <attach>true</attach>
-                                  <appendAssemblyId>true</appendAssemblyId>
-                                  <descriptors>
-                                      <descriptor>src/main/assemblies/docs-assembly.xml</descriptor>
-                                  </descriptors>
-                              </configuration>
-                              <goals>
-                                  <goal>single</goal>
-                              </goals>
-                          </execution>
-                      </executions>
-                  </plugin>
-            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.2.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.mycila.maven-license-plugin</groupId>
+                <artifactId>maven-license-plugin</artifactId>
+                <version>1.10.b1</version>
+                <configuration>
+                    <header>ApacheLicense-2.0-header.txt</header>
+                    <strictCheck>true</strictCheck>
+                    <failIfMissing>true</failIfMissing>
+                    <includes>
+                        <include>**/*.java</include>
+                    </includes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
