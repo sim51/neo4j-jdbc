@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 
 import org.junit.Test;
+import org.junit.Ignore;
 
 public class Neo4jStatementUnsupportedOperationsTest extends Neo4jJdbcTest
 {
@@ -87,6 +88,7 @@ public class Neo4jStatementUnsupportedOperationsTest extends Neo4jJdbcTest
     }
 
     @Test(expected = SQLFeatureNotSupportedException.class)
+    @Ignore
     public void testGetUpdateCountIsUnsupported() throws Exception
     {
         conn.createStatement().getUpdateCount();
