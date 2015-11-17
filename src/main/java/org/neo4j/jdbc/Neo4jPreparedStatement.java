@@ -37,7 +37,62 @@ public class Neo4jPreparedStatement extends AbstractPreparedStatement
     public Neo4jPreparedStatement( Neo4jConnection connection, String query )
     {
         super( connection );
-        this.query = query;
+        this.query = replacePlaceholders( query );
+    }
+
+    private static final String replacePlaceholders( final String input )
+    {
+        final char placeholder = '?';
+        final char quote = '"';
+        final char escape = '\\';
+        final String format = "{%d}";
+        int i = 1;
+        boolean inQuote = false;
+        boolean escaped = false;
+        StringBuffer sb = new StringBuffer( input.length() );
+        for ( char c : input.toCharArray() )
+        {
+            if ( inQuote )
+            {
+                if (escaped)
+                {
+                    escaped = false;
+                    sb.append( escape );
+                    sb.append( c );
+                }
+                else
+                {
+                    switch ( c )
+                    {
+                        case escape:
+                            escaped = true;
+                            break;
+                        case quote:
+                            inQuote = false;
+                            // fall through
+                        default:
+                            sb.append( c );
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                switch ( c )
+                {
+                    case placeholder:
+                        sb.append( String.format( format, i++ ) );
+                        break;
+                    case quote:
+                        inQuote = true;
+                        // fall through
+                    default:
+                        sb.append( c );
+                        break;
+                }
+            }
+        }
+        return sb.toString();
     }
 
     @Override
