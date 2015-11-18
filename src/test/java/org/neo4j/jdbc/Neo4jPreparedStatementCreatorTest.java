@@ -21,47 +21,27 @@ package org.neo4j.jdbc;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import static org.junit.Assert.assertEquals;
 
-public class Neo4jPreparedStatementTest extends Neo4jJdbcTest {
+public class Neo4jPreparedStatementCreatorTest {
 
-    private String columnName = "propName";
-    private String tableName = "test";
-    private final String columnType = "String";
-
-    public Neo4jPreparedStatementTest(Mode mode) throws SQLException
+    public Neo4jPreparedStatementCreatorTest() throws SQLException
     {
-        super(mode);
+        super();
     }
 
-    @Override
     @Before
     public void setUp() throws Exception
     {
-        super.setUp();
-        createTableMetaData( gdb, tableName, columnName, columnType );
-    }
-
-    private Field getQueryField() throws Exception
-    {
-        final Class<Neo4jPreparedStatement> cls = Neo4jPreparedStatement.class;
-        Field query = cls.getDeclaredField( "query" );
-        query.setAccessible( true );
-        return query;
     }
 
     @Test
     public void testCreateQuery() throws Exception
     {
-        final String format = "MATCH (t: %s{%s: {pn}}) RETURN t";
-        final String query = String.format( format, tableName, columnName );
-        final PreparedStatement stmt = conn.prepareStatement( query );
-        final Field field = getQueryField();
-        assertEquals( query, field.get( stmt ) );
+        final String query = "MATCH (t: test{propName: {pn}}) RETURN t";
+        assertEquals( query, Neo4jPreparedStatementCreator.replacePlaceholders( query ) );
     }
 
     @Test
@@ -69,8 +49,6 @@ public class Neo4jPreparedStatementTest extends Neo4jJdbcTest {
     {
         final String query = "MATCH (t: test{prop: ?, quote: \"? \\\"with ?\\\" to ?\"}) WHERE t.value = ? RETURN t";
         final String exp = "MATCH (t: test{prop: {1}, quote: \"? \\\"with ?\\\" to ?\"}) WHERE t.value = {2} RETURN t";
-        final PreparedStatement stmt = conn.prepareStatement( query );
-        final Field field = getQueryField();
-        assertEquals( exp, field.get( stmt ) );
+        assertEquals( exp, Neo4jPreparedStatementCreator.replacePlaceholders( query ) );
     }
 }
