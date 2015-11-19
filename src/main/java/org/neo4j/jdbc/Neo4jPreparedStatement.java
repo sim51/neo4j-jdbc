@@ -37,7 +37,7 @@ public class Neo4jPreparedStatement extends AbstractPreparedStatement
     public Neo4jPreparedStatement( Neo4jConnection connection, String query )
     {
         super( connection );
-        this.query = query;
+        this.query = Neo4jPreparedStatementCreator.replacePlaceholders( query );
     }
 
     @Override
