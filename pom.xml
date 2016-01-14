@@ -148,6 +148,11 @@
  	      </exclusions>
  	      <scope>test</scope>
  	    </dependency>
+        <dependency>
+            <groupId>javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.4.GA</version>
+        </dependency>
     </dependencies>
 
     <build>
