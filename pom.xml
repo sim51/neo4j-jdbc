@@ -51,12 +51,12 @@
         <dependency>
             <groupId>org.restlet.jse</groupId>
             <artifactId>org.restlet</artifactId>
-            <version>2.2.2</version>
+            <version>2.3.0</version>
         </dependency>
         <dependency>
             <groupId>org.restlet.jse</groupId>
             <artifactId>org.restlet.ext.httpclient</artifactId>
-            <version>2.2.2</version>
+            <version>2.3.0</version>
         </dependency>
         <dependency>
             <groupId>org.neo4j</groupId>
@@ -165,6 +165,25 @@
                     <source>1.7</source>
                     <target>1.7</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/alternateLocation</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>

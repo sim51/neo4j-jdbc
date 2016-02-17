@@ -34,7 +34,7 @@ import org.neo4j.jdbc.QueryExecutor;
 import org.neo4j.jdbc.Version;
 import org.restlet.Response;
 import org.restlet.data.CharacterSet;
-import org.restlet.engine.header.Header;
+import org.restlet.data.Header;
 import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
